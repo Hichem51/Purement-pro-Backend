@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const invoice_controller_1 = require("../controllers/invoice.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const validate_request_middleware_1 = require("../middlewares/validate-request.middleware");
+const async_handler_1 = require("../utils/async-handler");
+const invoice_validators_1 = require("../validators/invoice.validators");
+const router = (0, express_1.Router)();
+const dashboardAccess = [auth_middleware_1.requireAuth, (0, auth_middleware_1.requireRole)("admin", "manager")];
+router.post("/", ...dashboardAccess, invoice_validators_1.createInvoiceValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(invoice_controller_1.invoiceController.createInvoiceController));
+router.get("/", ...dashboardAccess, invoice_validators_1.listInvoicesValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(invoice_controller_1.invoiceController.listInvoicesController));
+router.get("/:id", ...dashboardAccess, invoice_validators_1.getInvoiceByIdValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(invoice_controller_1.invoiceController.getInvoiceByIdController));
+router.patch("/:id", ...dashboardAccess, invoice_validators_1.updateInvoiceValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(invoice_controller_1.invoiceController.updateInvoiceController));
+router.patch("/:id/status", ...dashboardAccess, invoice_validators_1.updateInvoiceStatusValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(invoice_controller_1.invoiceController.updateInvoiceStatusController));
+router.patch("/:id/payment-status", ...dashboardAccess, invoice_validators_1.updateInvoicePaymentStatusValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(invoice_controller_1.invoiceController.updateInvoicePaymentStatusController));
+router.delete("/:id", ...dashboardAccess, invoice_validators_1.getInvoiceByIdValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(invoice_controller_1.invoiceController.cancelInvoiceController));
+exports.default = router;
