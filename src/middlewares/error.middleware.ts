@@ -1,6 +1,5 @@
 import { ErrorRequestHandler } from "express";
 
-import { env } from "../config/env";
 import { ApiError } from "../utils/api-error";
 
 export const errorMiddleware: ErrorRequestHandler = (error, _req, res, _next) => {
@@ -9,9 +8,6 @@ export const errorMiddleware: ErrorRequestHandler = (error, _req, res, _next) =>
 
   res.status(statusCode).json({
     success: false,
-    message,
-    ...(env.nodeEnv === "development" && {
-      stack: error instanceof Error ? error.stack : undefined
-    })
+    message
   });
 };

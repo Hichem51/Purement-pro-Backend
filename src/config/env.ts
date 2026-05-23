@@ -8,6 +8,7 @@ interface EnvConfig {
   port: number;
   nodeEnv: NodeEnv;
   frontendUrl: string;
+  frontendUrls: string[];
   mongodbUri: string;
   jwtSecret: string;
   jwtExpiresIn: string;
@@ -46,10 +47,20 @@ if (!validNodeEnvs.includes(nodeEnv)) {
   throw new Error("NODE_ENV must be one of: development, production, test");
 }
 
+const frontendUrls = (process.env.FRONTEND_URL as string)
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
+
+if (frontendUrls.length === 0) {
+  throw new Error("FRONTEND_URL must include at least one allowed origin");
+}
+
 export const env: EnvConfig = {
   port,
   nodeEnv,
-  frontendUrl: process.env.FRONTEND_URL as string,
+  frontendUrl: frontendUrls[0],
+  frontendUrls,
   mongodbUri: process.env.MONGODB_URI as string,
   jwtSecret: process.env.JWT_SECRET as string,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN as string,

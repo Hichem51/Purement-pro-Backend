@@ -9,14 +9,14 @@ const escapeHtml = (value) => {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 };
-exports.managerInvitationEmailSubject = "Invitation au tableau de bord Purement Pro";
+exports.managerInvitationEmailSubject = "Accès au tableau de bord Purement Pro";
 const createManagerInvitationEmailHtml = ({ toName, setupUrl, invitedByName }) => {
     const safeName = escapeHtml(toName);
     const safeSetupUrl = escapeHtml(setupUrl);
     const safeInvitedByName = invitedByName ? escapeHtml(invitedByName) : undefined;
     const inviterText = safeInvitedByName
-        ? `${safeInvitedByName} vous a invité à rejoindre le tableau de bord Purement Pro.`
-        : "Un administrateur vous a invité à rejoindre le tableau de bord Purement Pro.";
+        ? `${safeInvitedByName} a ajouté votre compte au tableau de bord Purement Pro.`
+        : "Un administrateur a ajouté votre compte au tableau de bord Purement Pro.";
     return `<!doctype html>
 <html lang="fr">
   <head>
@@ -42,7 +42,7 @@ const createManagerInvitationEmailHtml = ({ toName, setupUrl, invitedByName }) =
             <tr>
               <td style="padding:36px 32px 28px;">
                 <h1 style="margin:0 0 20px;font-size:26px;line-height:1.25;color:#103746;font-weight:800;">
-                  Vous avez été invité au tableau de bord Purement Pro
+                  Vous avez été ajouté au tableau de bord Purement Pro
                 </h1>
                 <p style="margin:0 0 14px;font-size:16px;line-height:1.7;color:#273f4a;">
                   Bonjour ${safeName},
@@ -68,7 +68,7 @@ const createManagerInvitationEmailHtml = ({ toName, setupUrl, invitedByName }) =
                   <tr>
                     <td style="padding:18px 20px;">
                       <p style="margin:0;font-size:14px;line-height:1.7;color:#3d5662;">
-                        Ce lien est temporaire et expirera pour des raisons de sécurité. Si vous n’avez pas demandé cet accès, aucune action n’est requise.
+                        Ce lien est temporaire et expirera pour des raisons de sécurité. Si vous n'avez pas demandé cet accès, aucune action n'est requise.
                       </p>
                     </td>
                   </tr>
@@ -94,7 +94,7 @@ const createManagerInvitationEmailHtml = ({ toName, setupUrl, invitedByName }) =
             <tr>
               <td style="background:#f5f8fa;border-top:1px solid #e1e9ed;padding:22px 32px;color:#667b85;font-size:13px;line-height:1.7;">
                 <p style="margin:0 0 8px;">
-                  Si vous n’attendiez pas cette invitation, vous pouvez ignorer ce courriel.
+                  Si vous n'attendiez pas cet accès, vous pouvez ignorer ce courriel.
                 </p>
                 <p style="margin:0;color:#81919a;">
                   Purement Pro · Services professionnels de nettoyage
@@ -105,7 +105,7 @@ const createManagerInvitationEmailHtml = ({ toName, setupUrl, invitedByName }) =
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;">
             <tr>
               <td align="center" style="padding:18px 16px 0;color:#7b8d96;font-size:12px;line-height:1.6;">
-                Ce message concerne l’accès interne au tableau de bord Purement Pro.
+                Ce message concerne l'accès interne au tableau de bord Purement Pro.
               </td>
             </tr>
           </table>
@@ -118,24 +118,24 @@ const createManagerInvitationEmailHtml = ({ toName, setupUrl, invitedByName }) =
 exports.createManagerInvitationEmailHtml = createManagerInvitationEmailHtml;
 const createManagerInvitationEmailText = ({ toName, setupUrl, invitedByName }) => {
     const inviterLine = invitedByName
-        ? `${invitedByName} vous a invité à rejoindre le tableau de bord Purement Pro.`
-        : "Un administrateur vous a invité à rejoindre le tableau de bord Purement Pro.";
+        ? `${invitedByName} a ajouté votre compte au tableau de bord Purement Pro.`
+        : "Un administrateur a ajouté votre compte au tableau de bord Purement Pro.";
     return [
         "PUREMENT PRO",
         "",
-        "Vous avez été invité au tableau de bord Purement Pro",
+        "Vous avez été ajouté au tableau de bord Purement Pro",
         "",
         `Bonjour ${toName},`,
         "",
         inviterLine,
         "",
-        "Pour activer votre compte, ouvrez ce lien et créez votre mot de passe :",
+        "Pour activer votre compte, veuillez créer votre mot de passe en cliquant sur le bouton ci-dessous.",
         "",
         setupUrl,
         "",
         "Ce lien est temporaire et expirera pour des raisons de sécurité.",
         "",
-        "Si vous n’attendiez pas cette invitation, vous pouvez ignorer ce courriel."
+        "Si vous n'attendiez pas cet accès, vous pouvez ignorer ce courriel."
     ].join("\n");
 };
 exports.createManagerInvitationEmailText = createManagerInvitationEmailText;

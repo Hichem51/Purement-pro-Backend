@@ -6,6 +6,7 @@ import { validateRequest } from "../middlewares/validate-request.middleware";
 import { asyncHandler } from "../utils/async-handler";
 import {
   createBookingRequestValidators,
+  createManualBookingRequestValidators,
   getBookingRequestByIdValidators,
   listBookingRequestsValidators,
   updateBookingRequestNotesValidators,
@@ -21,6 +22,14 @@ router.post(
   createBookingRequestValidators,
   validateRequest,
   asyncHandler(bookingRequestController.createBookingRequestController)
+);
+
+router.post(
+  "/manual",
+  ...dashboardAccess,
+  createManualBookingRequestValidators,
+  validateRequest,
+  asyncHandler(bookingRequestController.createManualBookingRequestController)
 );
 
 router.get(

@@ -39,6 +39,11 @@ const getDashboardOverview = async () => {
         ]).exec(),
         invoice_model_1.Invoice.aggregate([
             {
+                $match: {
+                    status: { $ne: "cancelled" }
+                }
+            },
+            {
                 $group: {
                     _id: null,
                     totalAmount: { $sum: "$totalAmount" },

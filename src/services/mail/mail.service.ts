@@ -29,10 +29,6 @@ export interface SendManagerInvitationEmailInput {
   invitedByName?: string;
 }
 
-interface BrevoResponseSummary {
-  bodySummary?: string;
-}
-
 const brevoSendEmailEndpoint = "https://api.brevo.com/v3/smtp/email";
 
 const getMailConfig = (): { apiKey: string; fromEmail: string; fromName: string } => {
@@ -45,32 +41,6 @@ const getMailConfig = (): { apiKey: string; fromEmail: string; fromName: string 
     fromEmail: env.mailFromEmail,
     fromName: env.mailFromName
   };
-};
-
-const parseBrevoResponse = async (response: Response): Promise<BrevoResponseSummary> => {
-  const responseText = await response.text();
-
-  if (!responseText) {
-    return {};
-  }
-
-  try {
-    const parsed = JSON.parse(responseText) as {
-      message?: string;
-      code?: string;
-    };
-
-    return {
-      bodySummary: JSON.stringify({
-        code: parsed.code,
-        message: parsed.message
-      })
-    };
-  } catch {
-    return {
-      bodySummary: responseText.slice(0, 500)
-    };
-  }
 };
 
 export const sendBrevoTransactionalEmail = async (
@@ -90,15 +60,12 @@ export const sendBrevoTransactionalEmail = async (
   });
 
   if (!response.ok) {
-    const summary = await parseBrevoResponse(response);
-
     console.error("Brevo email send failed", {
       action: context.action,
       toEmail: payload.to[0]?.email,
       fromEmail: payload.sender.email,
       status: response.status,
-      statusText: response.statusText,
-      response: summary.bodySummary
+      statusText: response.statusText
     });
 
     throw new ApiError(500, "Email could not be sent");

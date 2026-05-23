@@ -80,6 +80,11 @@ export const getDashboardOverview = async () => {
     ]).exec(),
     Invoice.aggregate<InvoiceAmountSummary>([
       {
+        $match: {
+          status: { $ne: "cancelled" }
+        }
+      },
+      {
         $group: {
           _id: null,
           totalAmount: { $sum: "$totalAmount" },

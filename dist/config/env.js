@@ -28,10 +28,18 @@ const nodeEnv = process.env.NODE_ENV;
 if (!validNodeEnvs.includes(nodeEnv)) {
     throw new Error("NODE_ENV must be one of: development, production, test");
 }
+const frontendUrls = process.env.FRONTEND_URL
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean);
+if (frontendUrls.length === 0) {
+    throw new Error("FRONTEND_URL must include at least one allowed origin");
+}
 exports.env = {
     port,
     nodeEnv,
-    frontendUrl: process.env.FRONTEND_URL,
+    frontendUrl: frontendUrls[0],
+    frontendUrls,
     mongodbUri: process.env.MONGODB_URI,
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN,

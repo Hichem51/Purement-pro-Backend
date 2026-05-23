@@ -20,6 +20,8 @@ const bookingPhotoSchema = new mongoose_1.Schema({
 }, { _id: false });
 const bookingRequestSchema = new mongoose_1.Schema({
     customerId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Customer" },
+    requestNumber: { type: String, required: true, unique: true, sparse: true, trim: true },
+    source: { type: String, enum: ["website", "dashboard"], default: "website" },
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
@@ -38,7 +40,7 @@ const bookingRequestSchema = new mongoose_1.Schema({
     roomsOffices: { type: Number, required: true },
     bathrooms: { type: Number, required: true },
     levels: { type: Number, required: true },
-    propertyDescription: { type: String, required: true, trim: true },
+    propertyDescription: { type: String, trim: true },
     useEcoProducts: { type: Boolean, default: false },
     preferredStartDate: { type: Date, required: true },
     preferredEndDate: { type: Date },

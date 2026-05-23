@@ -3,12 +3,48 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateBookingRequestPhotos = exports.updateBookingRequestNotes = exports.updateBookingRequestStatus = exports.getBookingRequestById = exports.listBookingRequests = exports.createBookingRequest = void 0;
 const mongoose_1 = require("mongoose");
 const booking_request_model_1 = require("../models/booking-request.model");
+const api_error_1 = require("../utils/api-error");
 const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 };
+const isDuplicateKeyError = (error) => {
+    return typeof error === "object" && error !== null && "code" in error && error.code === 11000;
+};
+const generateRequestNumber = async (year) => {
+    const prefix = `PP-DMD-${year}-`;
+    const latestBookingRequest = await booking_request_model_1.BookingRequest.findOne({
+        requestNumber: { $regex: `^${prefix}\\d{4}$` }
+    })
+        .sort({ requestNumber: -1 })
+        .select("requestNumber")
+        .lean()
+        .exec();
+    const latestSequence = latestBookingRequest?.requestNumber
+        ? Number.parseInt(latestBookingRequest.requestNumber.replace(prefix, ""), 10)
+        : 0;
+    const nextSequence = latestSequence + 1;
+    return `${prefix}${String(nextSequence).padStart(4, "0")}`;
+};
 const createBookingRequest = async (input) => {
-    const bookingRequest = new booking_request_model_1.BookingRequest(input);
-    return bookingRequest.save();
+    const year = new Date().getFullYear();
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        const requestNumber = await generateRequestNumber(year);
+        try {
+            const bookingRequest = new booking_request_model_1.BookingRequest({
+                ...input,
+                requestNumber,
+                source: input.source ?? "website"
+            });
+            return await bookingRequest.save();
+        }
+        catch (error) {
+            if (isDuplicateKeyError(error)) {
+                continue;
+            }
+            throw error;
+        }
+    }
+    throw new api_error_1.ApiError(500, "Unable to generate a unique booking request number");
 };
 exports.createBookingRequest = createBookingRequest;
 const listBookingRequests = async (input) => {
@@ -20,6 +56,7 @@ const listBookingRequests = async (input) => {
     if (search) {
         const searchRegex = new RegExp(escapeRegex(search), "i");
         filter.$or = [
+            { requestNumber: searchRegex },
             { firstName: searchRegex },
             { lastName: searchRegex },
             { email: searchRegex },

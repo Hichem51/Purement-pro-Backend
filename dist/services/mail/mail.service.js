@@ -15,26 +15,6 @@ const getMailConfig = () => {
         fromName: env_1.env.mailFromName
     };
 };
-const parseBrevoResponse = async (response) => {
-    const responseText = await response.text();
-    if (!responseText) {
-        return {};
-    }
-    try {
-        const parsed = JSON.parse(responseText);
-        return {
-            bodySummary: JSON.stringify({
-                code: parsed.code,
-                message: parsed.message
-            })
-        };
-    }
-    catch {
-        return {
-            bodySummary: responseText.slice(0, 500)
-        };
-    }
-};
 const sendBrevoTransactionalEmail = async (payload, context) => {
     const { apiKey } = getMailConfig();
     const response = await fetch(brevoSendEmailEndpoint, {
@@ -47,14 +27,12 @@ const sendBrevoTransactionalEmail = async (payload, context) => {
         body: JSON.stringify(payload)
     });
     if (!response.ok) {
-        const summary = await parseBrevoResponse(response);
         console.error("Brevo email send failed", {
             action: context.action,
             toEmail: payload.to[0]?.email,
             fromEmail: payload.sender.email,
             status: response.status,
-            statusText: response.statusText,
-            response: summary.bodySummary
+            statusText: response.statusText
         });
         throw new api_error_1.ApiError(500, "Email could not be sent");
     }

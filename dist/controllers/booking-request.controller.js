@@ -11,7 +11,21 @@ class BookingRequestController {
             message: "Booking request created successfully",
             data: {
                 bookingRequestId: bookingRequest.id,
+                requestNumber: bookingRequest.requestNumber,
                 status: bookingRequest.status
+            }
+        });
+    };
+    createManualBookingRequestController = async (req, res) => {
+        const bookingRequest = await (0, booking_request_service_1.createBookingRequest)({
+            ...req.body,
+            source: "dashboard"
+        });
+        res.status(201).json({
+            success: true,
+            message: "Demande créée avec succès.",
+            data: {
+                bookingRequest
             }
         });
     };

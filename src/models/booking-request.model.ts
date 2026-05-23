@@ -11,6 +11,8 @@ export type ContactPreference = "email" | "sms" | "phone" | "whatsapp";
 
 export type BookingLanguage = "fr" | "en";
 
+export type BookingRequestSource = "website" | "dashboard";
+
 export const BOOKING_REQUEST_STATUSES = [
   "new",
   "reviewed",
@@ -33,6 +35,8 @@ export interface IBookingPhoto {
 
 export interface IBookingRequest extends Document {
   customerId?: Types.ObjectId;
+  requestNumber?: string;
+  source: BookingRequestSource;
   firstName: string;
   lastName: string;
   email: string;
@@ -47,7 +51,7 @@ export interface IBookingRequest extends Document {
   roomsOffices: number;
   bathrooms: number;
   levels: number;
-  propertyDescription: string;
+  propertyDescription?: string;
   useEcoProducts: boolean;
   preferredStartDate: Date;
   preferredEndDate?: Date;
@@ -80,6 +84,8 @@ const bookingPhotoSchema = new Schema<IBookingPhoto>(
 const bookingRequestSchema = new Schema<IBookingRequest>(
   {
     customerId: { type: Schema.Types.ObjectId, ref: "Customer" },
+    requestNumber: { type: String, required: true, unique: true, sparse: true, trim: true },
+    source: { type: String, enum: ["website", "dashboard"], default: "website" },
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
@@ -98,7 +104,7 @@ const bookingRequestSchema = new Schema<IBookingRequest>(
     roomsOffices: { type: Number, required: true },
     bathrooms: { type: Number, required: true },
     levels: { type: Number, required: true },
-    propertyDescription: { type: String, required: true, trim: true },
+    propertyDescription: { type: String, trim: true },
     useEcoProducts: { type: Boolean, default: false },
     preferredStartDate: { type: Date, required: true },
     preferredEndDate: { type: Date },
