@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const notification_controller_1 = require("../controllers/notification.controller");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const validate_request_middleware_1 = require("../middlewares/validate-request.middleware");
+const async_handler_1 = require("../utils/async-handler");
+const notification_validators_1 = require("../validators/notification.validators");
+const router = (0, express_1.Router)();
+const dashboardAccess = [auth_middleware_1.requireAuth, (0, auth_middleware_1.requireRole)("admin", "manager")];
+router.get("/", ...dashboardAccess, notification_validators_1.listNotificationsValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(notification_controller_1.notificationController.listNotificationsController));
+router.patch("/read-all", ...dashboardAccess, (0, async_handler_1.asyncHandler)(notification_controller_1.notificationController.markAllNotificationsAsReadController));
+router.patch("/:id/read", ...dashboardAccess, notification_validators_1.markNotificationAsReadValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(notification_controller_1.notificationController.markNotificationAsReadController));
+exports.default = router;

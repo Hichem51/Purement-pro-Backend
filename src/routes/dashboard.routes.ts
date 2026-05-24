@@ -8,6 +8,12 @@ const router = Router();
 const dashboardAccess = [requireAuth, requireRole("admin", "manager")];
 
 router.get(
+  "/search",
+  ...dashboardAccess,
+  asyncHandler(dashboardController.searchController)
+);
+
+router.get(
   "/overview",
   ...dashboardAccess,
   asyncHandler(dashboardController.getOverviewController)

@@ -10,6 +10,7 @@ const mongoose_1 = require("mongoose");
 const env_1 = require("../config/env");
 const mail_service_1 = require("./mail/mail.service");
 const user_model_1 = require("../models/user.model");
+const notification_service_1 = require("./notification.service");
 const api_error_1 = require("../utils/api-error");
 const INVITATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 const hashInvitationToken = (token) => {
@@ -61,6 +62,16 @@ const inviteUser = async (input) => {
         invitationTokenExpiresAt,
         invitedByUserId: new mongoose_1.Types.ObjectId(input.invitedByUserId),
         invitedAt: new Date()
+    });
+    await (0, notification_service_1.createNotificationSafely)({
+        type: "manager_added",
+        title: "Manager ajouté",
+        message: `${user.firstName} ${user.lastName}`.trim() + " a été ajouté au tableau de bord",
+        href: "/purement-console/users",
+        audience: "admin",
+        createdByUserId: input.invitedByUserId,
+        relatedResourceType: "user",
+        relatedResourceId: user.id
     });
     try {
         const invitedByUser = await user_model_1.User.findById(new mongoose_1.Types.ObjectId(input.invitedByUserId)).exec();

@@ -5,6 +5,7 @@ import { FilterQuery, Types } from "mongoose";
 import { env } from "../config/env";
 import { sendManagerInvitationEmail } from "./mail/mail.service";
 import { IUser, User, UserRole } from "../models/user.model";
+import { createNotificationSafely } from "./notification.service";
 import { ApiError } from "../utils/api-error";
 
 const INVITATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
@@ -139,6 +140,17 @@ export const inviteUser = async (input: InviteUserInput): Promise<InviteUserResu
     invitationTokenExpiresAt,
     invitedByUserId: new Types.ObjectId(input.invitedByUserId),
     invitedAt: new Date()
+  });
+
+  await createNotificationSafely({
+    type: "manager_added",
+    title: "Manager ajouté",
+    message: `${user.firstName} ${user.lastName}`.trim() + " a été ajouté au tableau de bord",
+    href: "/purement-console/users",
+    audience: "admin",
+    createdByUserId: input.invitedByUserId,
+    relatedResourceType: "user",
+    relatedResourceId: user.id
   });
 
   try {

@@ -7,6 +7,7 @@ import {
   InvoicePaymentStatus,
   InvoiceStatus
 } from "../models/invoice.model";
+import { createNotificationSafely } from "./notification.service";
 
 export interface ManualInvoiceItemInput {
   description: string;
@@ -29,6 +30,7 @@ export interface CreateInvoiceInput {
   dueAt?: Date;
   notes?: string;
   metadata?: Record<string, unknown>;
+  createdByUserId?: string;
 }
 
 export interface UpdateInvoiceInput {
@@ -118,6 +120,12 @@ const generateInvoiceNumber = async (year: number): Promise<string> => {
   return `${prefix}${String(nextSequence).padStart(4, "0")}`;
 };
 
+const invoicePaymentStatusLabels: Record<InvoicePaymentStatus, string> = {
+  unpaid: "non payée",
+  partial: "partiellement payée",
+  paid: "payée"
+};
+
 export const createInvoice = async (input: CreateInvoiceInput): Promise<IInvoice> => {
   const issuedAt = input.issuedAt ?? new Date();
   const year = issuedAt.getFullYear();
@@ -132,6 +140,9 @@ export const createInvoice = async (input: CreateInvoiceInput): Promise<IInvoice
           ? new Types.ObjectId(input.bookingRequestId)
           : undefined,
         customerId: input.customerId ? new Types.ObjectId(input.customerId) : undefined,
+        createdByUserId: input.createdByUserId
+          ? new Types.ObjectId(input.createdByUserId)
+          : undefined,
         invoiceNumber,
         status: "draft",
         paymentStatus: "unpaid",
@@ -147,7 +158,20 @@ export const createInvoice = async (input: CreateInvoiceInput): Promise<IInvoice
         ...totals
       });
 
-      return await invoice.save();
+      const savedInvoice = await invoice.save();
+
+      await createNotificationSafely({
+        type: "invoice_created",
+        title: "Facture créée",
+        message: `Facture ${savedInvoice.invoiceNumber} créée pour ${savedInvoice.customerName}`,
+        href: `/purement-console/invoices/${savedInvoice.id}`,
+        audience: "all",
+        createdByUserId: input.createdByUserId,
+        relatedResourceType: "invoice",
+        relatedResourceId: savedInvoice.id
+      });
+
+      return savedInvoice;
     } catch (error) {
       if (
         typeof error === "object" &&
@@ -294,13 +318,29 @@ export const updateInvoiceStatus = async (
 
 export const updateInvoicePaymentStatus = async (
   id: string,
-  paymentStatus: InvoicePaymentStatus
+  paymentStatus: InvoicePaymentStatus,
+  updatedByUserId?: string
 ): Promise<IInvoice | null> => {
-  return Invoice.findByIdAndUpdate(
+  const invoice = await Invoice.findByIdAndUpdate(
     new Types.ObjectId(id),
     { paymentStatus },
     { new: true, runValidators: true }
   ).exec();
+
+  if (invoice) {
+    await createNotificationSafely({
+      type: "invoice_payment_updated",
+      title: "Statut de paiement mis à jour",
+      message: `Facture ${invoice.invoiceNumber} marquée comme ${invoicePaymentStatusLabels[invoice.paymentStatus]}`,
+      href: `/purement-console/invoices/${invoice.id}`,
+      audience: "all",
+      createdByUserId: updatedByUserId,
+      relatedResourceType: "invoice",
+      relatedResourceId: invoice.id
+    });
+  }
+
+  return invoice;
 };
 
 export const cancelInvoice = async (id: string): Promise<IInvoice | null> => {

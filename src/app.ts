@@ -10,6 +10,7 @@ import bookingRequestRoutes from "./routes/booking-request.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 import healthRoutes from "./routes/health.routes";
 import invoiceRoutes from "./routes/invoice.routes";
+import notificationRoutes from "./routes/notification.routes";
 import userRoutes from "./routes/user.routes";
 
 const app = express();
@@ -45,6 +46,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/booking-requests", bookingRequestRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/invoices", invoiceRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/users", userRoutes);
 
 app.use(notFoundMiddleware);

@@ -14,6 +14,7 @@ const booking_request_routes_1 = __importDefault(require("./routes/booking-reque
 const dashboard_routes_1 = __importDefault(require("./routes/dashboard.routes"));
 const health_routes_1 = __importDefault(require("./routes/health.routes"));
 const invoice_routes_1 = __importDefault(require("./routes/invoice.routes"));
+const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const user_routes_1 = __importDefault(require("./routes/user.routes"));
 const app = (0, express_1.default)();
 const allowedOrigins = new Set(env_1.env.frontendUrls);
@@ -43,6 +44,7 @@ app.use("/api/auth", auth_routes_1.default);
 app.use("/api/booking-requests", booking_request_routes_1.default);
 app.use("/api/dashboard", dashboard_routes_1.default);
 app.use("/api/invoices", invoice_routes_1.default);
+app.use("/api/notifications", notification_routes_1.default);
 app.use("/api/users", user_routes_1.default);
 app.use(not_found_middleware_1.notFoundMiddleware);
 app.use(error_middleware_1.errorMiddleware);

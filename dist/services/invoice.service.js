@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cancelInvoice = exports.updateInvoicePaymentStatus = exports.updateInvoiceStatus = exports.updateInvoice = exports.getInvoiceById = exports.listInvoices = exports.createInvoice = void 0;
 const mongoose_1 = require("mongoose");
 const invoice_model_1 = require("../models/invoice.model");
+const notification_service_1 = require("./notification.service");
 const roundMoney = (value) => {
     return Math.round((value + Number.EPSILON) * 100) / 100;
 };
@@ -43,6 +44,11 @@ const generateInvoiceNumber = async (year) => {
     const nextSequence = latestSequence + 1;
     return `${prefix}${String(nextSequence).padStart(4, "0")}`;
 };
+const invoicePaymentStatusLabels = {
+    unpaid: "non payée",
+    partial: "partiellement payée",
+    paid: "payée"
+};
 const createInvoice = async (input) => {
     const issuedAt = input.issuedAt ?? new Date();
     const year = issuedAt.getFullYear();
@@ -55,6 +61,9 @@ const createInvoice = async (input) => {
                     ? new mongoose_1.Types.ObjectId(input.bookingRequestId)
                     : undefined,
                 customerId: input.customerId ? new mongoose_1.Types.ObjectId(input.customerId) : undefined,
+                createdByUserId: input.createdByUserId
+                    ? new mongoose_1.Types.ObjectId(input.createdByUserId)
+                    : undefined,
                 invoiceNumber,
                 status: "draft",
                 paymentStatus: "unpaid",
@@ -69,7 +78,18 @@ const createInvoice = async (input) => {
                 metadata: input.metadata,
                 ...totals
             });
-            return await invoice.save();
+            const savedInvoice = await invoice.save();
+            await (0, notification_service_1.createNotificationSafely)({
+                type: "invoice_created",
+                title: "Facture créée",
+                message: `Facture ${savedInvoice.invoiceNumber} créée pour ${savedInvoice.customerName}`,
+                href: `/purement-console/invoices/${savedInvoice.id}`,
+                audience: "all",
+                createdByUserId: input.createdByUserId,
+                relatedResourceType: "invoice",
+                relatedResourceId: savedInvoice.id
+            });
+            return savedInvoice;
         }
         catch (error) {
             if (typeof error === "object" &&
@@ -182,8 +202,21 @@ const updateInvoiceStatus = async (id, status) => {
     }).exec();
 };
 exports.updateInvoiceStatus = updateInvoiceStatus;
-const updateInvoicePaymentStatus = async (id, paymentStatus) => {
-    return invoice_model_1.Invoice.findByIdAndUpdate(new mongoose_1.Types.ObjectId(id), { paymentStatus }, { new: true, runValidators: true }).exec();
+const updateInvoicePaymentStatus = async (id, paymentStatus, updatedByUserId) => {
+    const invoice = await invoice_model_1.Invoice.findByIdAndUpdate(new mongoose_1.Types.ObjectId(id), { paymentStatus }, { new: true, runValidators: true }).exec();
+    if (invoice) {
+        await (0, notification_service_1.createNotificationSafely)({
+            type: "invoice_payment_updated",
+            title: "Statut de paiement mis à jour",
+            message: `Facture ${invoice.invoiceNumber} marquée comme ${invoicePaymentStatusLabels[invoice.paymentStatus]}`,
+            href: `/purement-console/invoices/${invoice.id}`,
+            audience: "all",
+            createdByUserId: updatedByUserId,
+            relatedResourceType: "invoice",
+            relatedResourceId: invoice.id
+        });
+    }
+    return invoice;
 };
 exports.updateInvoicePaymentStatus = updateInvoicePaymentStatus;
 const cancelInvoice = async (id) => {

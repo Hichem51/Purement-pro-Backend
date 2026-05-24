@@ -30,7 +30,8 @@ export class BookingRequestController {
   createManualBookingRequestController = async (req: Request, res: Response): Promise<void> => {
     const bookingRequest = await createBookingRequest({
       ...req.body,
-      source: "dashboard"
+      source: "dashboard",
+      createdByUserId: req.user?.id
     });
 
     res.status(201).json({
@@ -94,7 +95,7 @@ export class BookingRequestController {
     const { id } = req.params as { id: string };
     const { status } = req.body as { status: BookingRequestStatus };
 
-    const bookingRequest = await updateBookingRequestStatus(id, status);
+    const bookingRequest = await updateBookingRequestStatus(id, status, req.user?.id);
 
     if (!bookingRequest) {
       throw new ApiError(404, "Booking request not found");

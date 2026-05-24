@@ -14,7 +14,10 @@ import { ApiError } from "../utils/api-error";
 
 export class InvoiceController {
   createInvoiceController = async (req: Request, res: Response): Promise<void> => {
-    const invoice = await createInvoice(req.body);
+    const invoice = await createInvoice({
+      ...req.body,
+      createdByUserId: req.user?.id
+    });
 
     res.status(201).json({
       success: true,
@@ -93,7 +96,7 @@ export class InvoiceController {
   updateInvoicePaymentStatusController = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params as { id: string };
     const { paymentStatus } = req.body as { paymentStatus: InvoicePaymentStatus };
-    const invoice = await updateInvoicePaymentStatus(id, paymentStatus);
+    const invoice = await updateInvoicePaymentStatus(id, paymentStatus, req.user?.id);
 
     if (!invoice) {
       throw new ApiError(404, "Facture introuvable.");

@@ -10,6 +10,7 @@ import {
   IBookingPhoto,
   IBookingRequest
 } from "../models/booking-request.model";
+import { createNotificationSafely } from "./notification.service";
 import { ApiError } from "../utils/api-error";
 
 export interface CreateBookingRequestInput {
@@ -41,6 +42,7 @@ export interface CreateBookingRequestInput {
   photos?: IBookingPhoto[];
   internalNotes?: string;
   source?: BookingRequestSource;
+  createdByUserId?: string;
 }
 
 export interface ListBookingRequestsInput {
@@ -119,22 +121,49 @@ const generateRequestNumber = async (year: number): Promise<string> => {
   return `${prefix}${String(nextSequence).padStart(4, "0")}`;
 };
 
+const bookingStatusLabels: Record<BookingRequestStatus, string> = {
+  new: "Nouveau",
+  reviewed: "Revu",
+  contacted: "Contacté",
+  scheduled: "Planifié",
+  cancelled: "Annulé",
+  completed: "Terminé"
+};
+
 export const createBookingRequest = async (
   input: CreateBookingRequestInput
 ): Promise<IBookingRequest> => {
   const year = new Date().getFullYear();
+  const { createdByUserId, ...bookingInput } = input;
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const requestNumber = await generateRequestNumber(year);
 
     try {
       const bookingRequest = new BookingRequest({
-        ...input,
+        ...bookingInput,
         requestNumber,
-        source: input.source ?? "website"
+        source: bookingInput.source ?? "website"
       });
 
-      return await bookingRequest.save();
+      const savedBookingRequest = await bookingRequest.save();
+      const clientName = `${savedBookingRequest.firstName} ${savedBookingRequest.lastName}`.trim();
+      const wasCreatedManually = savedBookingRequest.source === "dashboard";
+
+      await createNotificationSafely({
+        type: "booking_created",
+        title: "Nouvelle demande reçue",
+        message: wasCreatedManually
+          ? `Demande ${savedBookingRequest.requestNumber} créée manuellement pour ${clientName}`
+          : `Demande ${savedBookingRequest.requestNumber} créée pour ${clientName}`,
+        href: `/purement-console/bookings/${savedBookingRequest.id}`,
+        audience: "all",
+        createdByUserId,
+        relatedResourceType: "booking",
+        relatedResourceId: savedBookingRequest.id
+      });
+
+      return savedBookingRequest;
     } catch (error) {
       if (isDuplicateKeyError(error)) {
         continue;
@@ -307,13 +336,29 @@ export const updateBookingRequest = async (
 
 export const updateBookingRequestStatus = async (
   id: string,
-  status: BookingRequestStatus
+  status: BookingRequestStatus,
+  updatedByUserId?: string
 ): Promise<IBookingRequest | null> => {
-  return BookingRequest.findByIdAndUpdate(
+  const bookingRequest = await BookingRequest.findByIdAndUpdate(
     new Types.ObjectId(id),
     { status },
     { new: true, runValidators: true }
   ).exec();
+
+  if (bookingRequest) {
+    await createNotificationSafely({
+      type: "booking_status_updated",
+      title: "Statut de demande mis à jour",
+      message: `Demande ${bookingRequest.requestNumber} marquée comme ${bookingStatusLabels[bookingRequest.status]}`,
+      href: `/purement-console/bookings/${bookingRequest.id}`,
+      audience: "all",
+      createdByUserId: updatedByUserId,
+      relatedResourceType: "booking",
+      relatedResourceId: bookingRequest.id
+    });
+  }
+
+  return bookingRequest;
 };
 
 export const updateBookingRequestNotes = async (

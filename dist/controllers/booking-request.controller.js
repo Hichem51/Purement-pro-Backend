@@ -19,7 +19,8 @@ class BookingRequestController {
     createManualBookingRequestController = async (req, res) => {
         const bookingRequest = await (0, booking_request_service_1.createBookingRequest)({
             ...req.body,
-            source: "dashboard"
+            source: "dashboard",
+            createdByUserId: req.user?.id
         });
         res.status(201).json({
             success: true,
@@ -72,7 +73,7 @@ class BookingRequestController {
     updateBookingRequestStatusController = async (req, res) => {
         const { id } = req.params;
         const { status } = req.body;
-        const bookingRequest = await (0, booking_request_service_1.updateBookingRequestStatus)(id, status);
+        const bookingRequest = await (0, booking_request_service_1.updateBookingRequestStatus)(id, status, req.user?.id);
         if (!bookingRequest) {
             throw new api_error_1.ApiError(404, "Booking request not found");
         }

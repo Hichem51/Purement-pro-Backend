@@ -5,7 +5,10 @@ const invoice_service_1 = require("../services/invoice.service");
 const api_error_1 = require("../utils/api-error");
 class InvoiceController {
     createInvoiceController = async (req, res) => {
-        const invoice = await (0, invoice_service_1.createInvoice)(req.body);
+        const invoice = await (0, invoice_service_1.createInvoice)({
+            ...req.body,
+            createdByUserId: req.user?.id
+        });
         res.status(201).json({
             success: true,
             message: "Invoice created successfully",
@@ -71,7 +74,7 @@ class InvoiceController {
     updateInvoicePaymentStatusController = async (req, res) => {
         const { id } = req.params;
         const { paymentStatus } = req.body;
-        const invoice = await (0, invoice_service_1.updateInvoicePaymentStatus)(id, paymentStatus);
+        const invoice = await (0, invoice_service_1.updateInvoicePaymentStatus)(id, paymentStatus, req.user?.id);
         if (!invoice) {
             throw new api_error_1.ApiError(404, "Facture introuvable.");
         }

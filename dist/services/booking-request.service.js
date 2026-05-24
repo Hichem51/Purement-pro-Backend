@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateBookingRequestPhotos = exports.updateBookingRequestNotes = exports.updateBookingRequestStatus = exports.updateBookingRequest = exports.getBookingRequestById = exports.listBookingRequests = exports.createBookingRequest = void 0;
 const mongoose_1 = require("mongoose");
 const booking_request_model_1 = require("../models/booking-request.model");
+const notification_service_1 = require("./notification.service");
 const api_error_1 = require("../utils/api-error");
 const escapeRegex = (value) => {
     return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -25,17 +26,41 @@ const generateRequestNumber = async (year) => {
     const nextSequence = latestSequence + 1;
     return `${prefix}${String(nextSequence).padStart(4, "0")}`;
 };
+const bookingStatusLabels = {
+    new: "Nouveau",
+    reviewed: "Revu",
+    contacted: "Contacté",
+    scheduled: "Planifié",
+    cancelled: "Annulé",
+    completed: "Terminé"
+};
 const createBookingRequest = async (input) => {
     const year = new Date().getFullYear();
+    const { createdByUserId, ...bookingInput } = input;
     for (let attempt = 0; attempt < 3; attempt += 1) {
         const requestNumber = await generateRequestNumber(year);
         try {
             const bookingRequest = new booking_request_model_1.BookingRequest({
-                ...input,
+                ...bookingInput,
                 requestNumber,
-                source: input.source ?? "website"
+                source: bookingInput.source ?? "website"
             });
-            return await bookingRequest.save();
+            const savedBookingRequest = await bookingRequest.save();
+            const clientName = `${savedBookingRequest.firstName} ${savedBookingRequest.lastName}`.trim();
+            const wasCreatedManually = savedBookingRequest.source === "dashboard";
+            await (0, notification_service_1.createNotificationSafely)({
+                type: "booking_created",
+                title: "Nouvelle demande reçue",
+                message: wasCreatedManually
+                    ? `Demande ${savedBookingRequest.requestNumber} créée manuellement pour ${clientName}`
+                    : `Demande ${savedBookingRequest.requestNumber} créée pour ${clientName}`,
+                href: `/purement-console/bookings/${savedBookingRequest.id}`,
+                audience: "all",
+                createdByUserId,
+                relatedResourceType: "booking",
+                relatedResourceId: savedBookingRequest.id
+            });
+            return savedBookingRequest;
         }
         catch (error) {
             if (isDuplicateKeyError(error)) {
@@ -168,8 +193,21 @@ const updateBookingRequest = async (id, input) => {
     }).exec();
 };
 exports.updateBookingRequest = updateBookingRequest;
-const updateBookingRequestStatus = async (id, status) => {
-    return booking_request_model_1.BookingRequest.findByIdAndUpdate(new mongoose_1.Types.ObjectId(id), { status }, { new: true, runValidators: true }).exec();
+const updateBookingRequestStatus = async (id, status, updatedByUserId) => {
+    const bookingRequest = await booking_request_model_1.BookingRequest.findByIdAndUpdate(new mongoose_1.Types.ObjectId(id), { status }, { new: true, runValidators: true }).exec();
+    if (bookingRequest) {
+        await (0, notification_service_1.createNotificationSafely)({
+            type: "booking_status_updated",
+            title: "Statut de demande mis à jour",
+            message: `Demande ${bookingRequest.requestNumber} marquée comme ${bookingStatusLabels[bookingRequest.status]}`,
+            href: `/purement-console/bookings/${bookingRequest.id}`,
+            audience: "all",
+            createdByUserId: updatedByUserId,
+            relatedResourceType: "booking",
+            relatedResourceId: bookingRequest.id
+        });
+    }
+    return bookingRequest;
 };
 exports.updateBookingRequestStatus = updateBookingRequestStatus;
 const updateBookingRequestNotes = async (id, internalNotes) => {

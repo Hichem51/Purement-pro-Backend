@@ -10,8 +10,21 @@ import {
   InvoicePaymentStatus,
   InvoiceStatus
 } from "../models/invoice.model";
+import { User, UserRole } from "../models/user.model";
 
 type CountBucket<T extends string> = Record<T, number>;
+
+type DashboardSearchResultType = "booking" | "invoice" | "user";
+
+export interface DashboardSearchResult {
+  type: DashboardSearchResultType;
+  id: string;
+  title: string;
+  subtitle: string;
+  href: string;
+  meta: string;
+  createdAt?: Date;
+}
 
 interface BookingStatusCount {
   _id: BookingRequestStatus;
@@ -39,6 +52,45 @@ const createCountBucket = <T extends string>(keys: readonly T[]): CountBucket<T>
     bucket[key] = 0;
     return bucket;
   }, {} as CountBucket<T>);
+};
+
+const escapeRegex = (value: string): string => {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
+
+const createRegex = (value: string): RegExp => {
+  return new RegExp(escapeRegex(value), "i");
+};
+
+const joinSubtitleParts = (parts: Array<string | undefined>): string => {
+  return parts.filter(Boolean).join(" · ");
+};
+
+const formatCurrency = (amount: number, currency: string): string => {
+  return new Intl.NumberFormat("fr-CA", {
+    style: "currency",
+    currency
+  }).format(amount);
+};
+
+const bookingStatusLabels: Record<BookingRequestStatus, string> = {
+  new: "Nouveau",
+  reviewed: "Revu",
+  contacted: "Contacté",
+  scheduled: "Planifié",
+  cancelled: "Annulé",
+  completed: "Terminé"
+};
+
+const invoicePaymentStatusLabels: Record<InvoicePaymentStatus, string> = {
+  unpaid: "Non payée",
+  partial: "Partielle",
+  paid: "Payée"
+};
+
+const userRoleLabels: Record<UserRole, string> = {
+  admin: "Admin",
+  manager: "Manager"
 };
 
 export const getDashboardOverview = async () => {
@@ -171,5 +223,99 @@ export const getDashboardOverview = async () => {
       currency: invoice.currency,
       createdAt: invoice.createdAt
     }))
+  };
+};
+
+export const searchDashboard = async (
+  query: string,
+  role: UserRole
+): Promise<{ results: Omit<DashboardSearchResult, "createdAt">[] }> => {
+  const regex = createRegex(query);
+  const searchFilter = (fields: string[]) => ({
+    $or: fields.map((field) => ({ [field]: regex }))
+  });
+
+  const searchUsers = role === "admin";
+  const queryParts = query.split(/\s+/).filter(Boolean);
+  const userNamePartFilters = queryParts.map((part) => {
+    const partRegex = createRegex(part);
+
+    return {
+      $or: [{ firstName: partRegex }, { lastName: partRegex }]
+    };
+  });
+  const userSearchFilter = {
+    $or: [
+      ...searchFilter(["firstName", "lastName", "email", "role"]).$or,
+      {
+        $and: userNamePartFilters
+      }
+    ]
+  };
+
+  const [bookings, invoices, users] = await Promise.all([
+    BookingRequest.find(searchFilter(["requestNumber", "firstName", "lastName", "email", "phone", "city"]))
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("requestNumber firstName lastName email status createdAt")
+      .lean()
+      .exec(),
+    Invoice.find(searchFilter(["invoiceNumber", "customerName", "customerEmail", "customerPhone"]))
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("invoiceNumber customerName totalAmount currency paymentStatus createdAt")
+      .lean()
+      .exec(),
+    searchUsers
+      ? User.find(userSearchFilter)
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .select("firstName lastName email role createdAt")
+          .lean()
+          .exec()
+      : Promise.resolve([])
+  ]);
+
+  const results: DashboardSearchResult[] = [
+    ...bookings.map((booking) => ({
+      type: "booking" as const,
+      id: booking._id.toString(),
+      title: booking.requestNumber ?? "Demande",
+      subtitle: joinSubtitleParts([
+        [booking.firstName, booking.lastName].filter(Boolean).join(" "),
+        booking.email
+      ]),
+      href: `/purement-console/bookings/${booking._id.toString()}`,
+      meta: bookingStatusLabels[booking.status],
+      createdAt: booking.createdAt
+    })),
+    ...invoices.map((invoice) => ({
+      type: "invoice" as const,
+      id: invoice._id.toString(),
+      title: invoice.invoiceNumber,
+      subtitle: joinSubtitleParts([
+        invoice.customerName,
+        formatCurrency(invoice.totalAmount, invoice.currency)
+      ]),
+      href: `/purement-console/invoices/${invoice._id.toString()}`,
+      meta: invoicePaymentStatusLabels[invoice.paymentStatus],
+      createdAt: invoice.createdAt
+    })),
+    ...users.map((user) => ({
+      type: "user" as const,
+      id: user._id.toString(),
+      title: [user.firstName, user.lastName].filter(Boolean).join(" "),
+      subtitle: user.email,
+      href: "/purement-console/users",
+      meta: userRoleLabels[user.role],
+      createdAt: user.createdAt
+    }))
+  ];
+
+  return {
+    results: results
+      .sort((left, right) => (right.createdAt?.getTime() ?? 0) - (left.createdAt?.getTime() ?? 0))
+      .slice(0, 8)
+      .map(({ createdAt: _createdAt, ...result }) => result)
   };
 };

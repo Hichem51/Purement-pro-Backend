@@ -6,5 +6,6 @@ const auth_middleware_1 = require("../middlewares/auth.middleware");
 const async_handler_1 = require("../utils/async-handler");
 const router = (0, express_1.Router)();
 const dashboardAccess = [auth_middleware_1.requireAuth, (0, auth_middleware_1.requireRole)("admin", "manager")];
+router.get("/search", ...dashboardAccess, (0, async_handler_1.asyncHandler)(dashboard_controller_1.dashboardController.searchController));
 router.get("/overview", ...dashboardAccess, (0, async_handler_1.asyncHandler)(dashboard_controller_1.dashboardController.getOverviewController));
 exports.default = router;
