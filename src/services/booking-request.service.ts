@@ -51,6 +51,34 @@ export interface ListBookingRequestsInput {
   sort: "newest" | "oldest";
 }
 
+export interface UpdateBookingRequestInput {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  streetAddress?: string;
+  city?: string;
+  provinceState?: string;
+  postalCode?: string;
+  country?: string;
+  propertyType?: string;
+  cleaningType?: CleaningType;
+  roomsOffices?: number;
+  bathrooms?: number;
+  levels?: number;
+  propertyDescription?: string;
+  useEcoProducts?: boolean;
+  preferredStartDate?: Date;
+  preferredEndDate?: Date;
+  preferredTime?: string;
+  frequency?: string;
+  contactPreference?: ContactPreference;
+  referralSource?: string;
+  bookingSmsConsent?: boolean;
+  marketingEmailConsent?: boolean;
+  language?: BookingLanguage;
+}
+
 export interface UpdateBookingRequestPhotosInput {
   photos: IBookingPhoto[];
 }
@@ -163,6 +191,118 @@ export const listBookingRequests = async (
 
 export const getBookingRequestById = async (id: string): Promise<IBookingRequest | null> => {
   return BookingRequest.findById(new Types.ObjectId(id)).exec();
+};
+
+export const updateBookingRequest = async (
+  id: string,
+  input: UpdateBookingRequestInput
+): Promise<IBookingRequest | null> => {
+  const allowedUpdates: UpdateBookingRequestInput = {};
+
+  if (input.firstName !== undefined) {
+    allowedUpdates.firstName = input.firstName;
+  }
+
+  if (input.lastName !== undefined) {
+    allowedUpdates.lastName = input.lastName;
+  }
+
+  if (input.email !== undefined) {
+    allowedUpdates.email = input.email;
+  }
+
+  if (input.phone !== undefined) {
+    allowedUpdates.phone = input.phone;
+  }
+
+  if (input.streetAddress !== undefined) {
+    allowedUpdates.streetAddress = input.streetAddress;
+  }
+
+  if (input.city !== undefined) {
+    allowedUpdates.city = input.city;
+  }
+
+  if (input.provinceState !== undefined) {
+    allowedUpdates.provinceState = input.provinceState;
+  }
+
+  if (input.postalCode !== undefined) {
+    allowedUpdates.postalCode = input.postalCode;
+  }
+
+  if (input.country !== undefined) {
+    allowedUpdates.country = input.country;
+  }
+
+  if (input.propertyType !== undefined) {
+    allowedUpdates.propertyType = input.propertyType;
+  }
+
+  if (input.cleaningType !== undefined) {
+    allowedUpdates.cleaningType = input.cleaningType;
+  }
+
+  if (input.roomsOffices !== undefined) {
+    allowedUpdates.roomsOffices = input.roomsOffices;
+  }
+
+  if (input.bathrooms !== undefined) {
+    allowedUpdates.bathrooms = input.bathrooms;
+  }
+
+  if (input.levels !== undefined) {
+    allowedUpdates.levels = input.levels;
+  }
+
+  if (input.propertyDescription !== undefined) {
+    allowedUpdates.propertyDescription = input.propertyDescription;
+  }
+
+  if (input.useEcoProducts !== undefined) {
+    allowedUpdates.useEcoProducts = input.useEcoProducts;
+  }
+
+  if (input.preferredStartDate !== undefined) {
+    allowedUpdates.preferredStartDate = input.preferredStartDate;
+  }
+
+  if (input.preferredEndDate !== undefined) {
+    allowedUpdates.preferredEndDate = input.preferredEndDate;
+  }
+
+  if (input.preferredTime !== undefined) {
+    allowedUpdates.preferredTime = input.preferredTime;
+  }
+
+  if (input.frequency !== undefined) {
+    allowedUpdates.frequency = input.frequency;
+  }
+
+  if (input.contactPreference !== undefined) {
+    allowedUpdates.contactPreference = input.contactPreference;
+  }
+
+  if (input.referralSource !== undefined) {
+    allowedUpdates.referralSource = input.referralSource;
+  }
+
+  if (input.bookingSmsConsent !== undefined) {
+    allowedUpdates.bookingSmsConsent = input.bookingSmsConsent;
+  }
+
+  if (input.marketingEmailConsent !== undefined) {
+    allowedUpdates.marketingEmailConsent = input.marketingEmailConsent;
+  }
+
+  if (input.language !== undefined) {
+    allowedUpdates.language = input.language;
+  }
+
+  return BookingRequest.findByIdAndUpdate(new Types.ObjectId(id), allowedUpdates, {
+    new: true,
+    runValidators: true
+  }).exec();
 };
 
 export const updateBookingRequestStatus = async (

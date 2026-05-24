@@ -15,3 +15,18 @@ export const loginValidators = [
     .isString()
     .withMessage("Password must be a string")
 ];
+
+export const updateMeAvatarValidators = [
+  body("avatarUrl")
+    .trim()
+    .notEmpty()
+    .withMessage("Avatar URL is required")
+    .isURL({ require_protocol: true })
+    .withMessage("Avatar URL must be valid"),
+
+  body("avatarPublicId")
+    .optional()
+    .trim()
+    .isLength({ max: 300 })
+    .withMessage("Avatar public ID must be at most 300 characters")
+];

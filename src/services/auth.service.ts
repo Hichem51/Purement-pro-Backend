@@ -15,6 +15,7 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   email: string;
+  avatarUrl?: string;
   role: IUser["role"];
 }
 
@@ -28,6 +29,12 @@ export interface LoginResult {
   user: AuthUser;
 }
 
+export interface UpdateCurrentUserAvatarInput {
+  userId: string;
+  avatarUrl: string;
+  avatarPublicId?: string;
+}
+
 const invalidCredentialsError = new ApiError(401, "Courriel ou mot de passe invalide.");
 
 export const toAuthUser = (user: IUser): AuthUser => ({
@@ -35,6 +42,7 @@ export const toAuthUser = (user: IUser): AuthUser => ({
   firstName: user.firstName,
   lastName: user.lastName,
   email: user.email,
+  avatarUrl: user.avatarUrl,
   role: user.role
 });
 
@@ -74,4 +82,23 @@ export const login = async (input: LoginInput): Promise<LoginResult> => {
     token: signAuthToken(user),
     user: toAuthUser(user)
   };
+};
+
+export const updateCurrentUserAvatar = async (
+  input: UpdateCurrentUserAvatarInput
+): Promise<AuthUser> => {
+  const user = await User.findByIdAndUpdate(
+    input.userId,
+    {
+      avatarUrl: input.avatarUrl,
+      avatarPublicId: input.avatarPublicId
+    },
+    { new: true, runValidators: true }
+  ).exec();
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return toAuthUser(user);
 };

@@ -9,6 +9,7 @@ import {
   createManualBookingRequestValidators,
   getBookingRequestByIdValidators,
   listBookingRequestsValidators,
+  updateBookingRequestValidator,
   updateBookingRequestNotesValidators,
   updateBookingRequestPhotosValidators,
   updateBookingRequestStatusValidators
@@ -46,6 +47,14 @@ router.get(
   getBookingRequestByIdValidators,
   validateRequest,
   asyncHandler(bookingRequestController.getBookingRequestByIdController)
+);
+
+router.patch(
+  "/:id",
+  ...dashboardAccess,
+  updateBookingRequestValidator,
+  validateRequest,
+  asyncHandler(bookingRequestController.updateBookingRequestController)
 );
 
 router.patch(

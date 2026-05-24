@@ -7,6 +7,8 @@ export interface IUser extends Document {
   lastName: string;
   email: string;
   passwordHash: string;
+  avatarUrl?: string;
+  avatarPublicId?: string;
   role: UserRole;
   isActive: boolean;
   lastLoginAt?: Date;
@@ -27,6 +29,8 @@ const userSchema = new Schema<IUser>(
     lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
+    avatarUrl: { type: String, trim: true },
+    avatarPublicId: { type: String, trim: true },
     role: { type: String, enum: ["admin", "manager"], default: "admin" },
     isActive: { type: Boolean, default: true },
     lastLoginAt: { type: Date },

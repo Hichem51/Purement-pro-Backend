@@ -14,6 +14,17 @@ const cleaningTypes = [
 const contactPreferences = ["email", "sms", "phone", "whatsapp"];
 
 const unsafeDescriptionPatterns = [/<script/i, /<\/script/i, /javascript:/i];
+const protectedUpdateFields = [
+  "requestNumber",
+  "status",
+  "internalNotes",
+  "photos",
+  "source",
+  "createdAt",
+  "updatedAt",
+  "_id",
+  "id"
+];
 
 const propertyDescriptionSafetyValidator = (value: string): boolean => {
   if (unsafeDescriptionPatterns.some((pattern) => pattern.test(value))) {
@@ -458,6 +469,178 @@ export const getBookingRequestByIdValidators = [
   param("id")
     .custom((value: string) => isValidObjectId(value))
     .withMessage("Booking request ID must be a valid MongoDB ObjectId")
+];
+
+export const updateBookingRequestValidator = [
+  param("id")
+    .custom((value: string) => isValidObjectId(value))
+    .withMessage("Booking request ID must be a valid MongoDB ObjectId"),
+
+  body(protectedUpdateFields)
+    .not()
+    .exists()
+    .withMessage("This field cannot be updated from this route"),
+
+  body("firstName")
+    .optional()
+    .trim()
+    .isLength({ max: 80 })
+    .withMessage("First name must be at most 80 characters"),
+
+  body("lastName")
+    .optional()
+    .trim()
+    .isLength({ max: 80 })
+    .withMessage("Last name must be at most 80 characters"),
+
+  body("email")
+    .optional()
+    .trim()
+    .isEmail()
+    .withMessage("Email must be valid")
+    .toLowerCase()
+    .isLength({ max: 254 })
+    .withMessage("Email must be at most 254 characters"),
+
+  body("phone")
+    .optional()
+    .trim()
+    .isLength({ max: 30 })
+    .withMessage("Phone must be at most 30 characters"),
+
+  body("streetAddress")
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage("Street address must be at most 200 characters"),
+
+  body("city")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("City must be at most 100 characters"),
+
+  body("provinceState")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Province or state must be at most 100 characters"),
+
+  body("postalCode")
+    .optional()
+    .trim()
+    .isLength({ max: 30 })
+    .withMessage("Postal code must be at most 30 characters"),
+
+  body("country")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Country must be at most 100 characters"),
+
+  body("propertyType")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Property type must be at most 100 characters"),
+
+  body("cleaningType")
+    .optional()
+    .isIn(cleaningTypes)
+    .withMessage("Cleaning type is invalid"),
+
+  body("roomsOffices")
+    .optional()
+    .isInt({ min: 0, max: 100 })
+    .withMessage("Rooms/offices must be an integer between 0 and 100")
+    .toInt(),
+
+  body("bathrooms")
+    .optional()
+    .isInt({ min: 0, max: 50 })
+    .withMessage("Bathrooms must be an integer between 0 and 50")
+    .toInt(),
+
+  body("levels")
+    .optional()
+    .isInt({ min: 0, max: 20 })
+    .withMessage("Levels must be an integer between 0 and 20")
+    .toInt(),
+
+  body("propertyDescription")
+    .optional()
+    .trim()
+    .isLength({ max: 2000 })
+    .withMessage("Property description must be at most 2000 characters")
+    .custom(propertyDescriptionSafetyValidator),
+
+  body("useEcoProducts")
+    .optional()
+    .isBoolean()
+    .withMessage("Use eco products must be a boolean")
+    .toBoolean(),
+
+  body("preferredStartDate")
+    .optional()
+    .isISO8601({ strict: true })
+    .withMessage("Preferred start date must be a valid ISO date")
+    .toDate(),
+
+  body("preferredEndDate")
+    .optional()
+    .isISO8601({ strict: true })
+    .withMessage("Preferred end date must be a valid ISO date")
+    .toDate()
+    .custom((preferredEndDate: Date, { req }) => {
+      if (!req.body.preferredStartDate) {
+        return true;
+      }
+
+      const preferredStartDate = new Date(req.body.preferredStartDate);
+
+      if (preferredEndDate < preferredStartDate) {
+        throw new Error("Preferred end date must not be before preferred start date");
+      }
+
+      return true;
+    }),
+
+  body("preferredTime")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Preferred time must be at most 100 characters"),
+
+  body("frequency")
+    .optional()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("Frequency must be at most 100 characters"),
+
+  body("contactPreference")
+    .optional()
+    .isIn(contactPreferences)
+    .withMessage("Contact preference is invalid"),
+
+  body("referralSource")
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage("Referral source must be at most 200 characters"),
+
+  body("bookingSmsConsent")
+    .optional()
+    .isBoolean()
+    .withMessage("Booking SMS consent must be a boolean")
+    .toBoolean(),
+
+  body("marketingEmailConsent")
+    .optional()
+    .isBoolean()
+    .withMessage("Marketing email consent must be a boolean")
+    .toBoolean(),
+
+  body("language").optional().isIn(["fr", "en"]).withMessage("Language must be fr or en")
 ];
 
 export const updateBookingRequestStatusValidators = [

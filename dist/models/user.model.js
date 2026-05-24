@@ -7,6 +7,8 @@ const userSchema = new mongoose_1.Schema({
     lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
+    avatarUrl: { type: String, trim: true },
+    avatarPublicId: { type: String, trim: true },
     role: { type: String, enum: ["admin", "manager"], default: "admin" },
     isActive: { type: Boolean, default: true },
     lastLoginAt: { type: Date },

@@ -6,6 +6,7 @@ import {
   createBookingRequest,
   getBookingRequestById,
   listBookingRequests,
+  updateBookingRequest,
   updateBookingRequestNotes,
   updateBookingRequestPhotos,
   updateBookingRequestStatus
@@ -66,6 +67,23 @@ export class BookingRequestController {
 
     res.status(200).json({
       success: true,
+      data: {
+        bookingRequest
+      }
+    });
+  };
+
+  updateBookingRequestController = async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params as { id: string };
+    const bookingRequest = await updateBookingRequest(id, req.body);
+
+    if (!bookingRequest) {
+      throw new ApiError(404, "Booking request not found");
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Demande mise à jour avec succès.",
       data: {
         bookingRequest
       }

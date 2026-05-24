@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.signAuthToken = exports.toAuthUser = void 0;
+exports.updateCurrentUserAvatar = exports.login = exports.signAuthToken = exports.toAuthUser = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const env_1 = require("../config/env");
@@ -15,6 +15,7 @@ const toAuthUser = (user) => ({
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
+    avatarUrl: user.avatarUrl,
     role: user.role
 });
 exports.toAuthUser = toAuthUser;
@@ -49,3 +50,14 @@ const login = async (input) => {
     };
 };
 exports.login = login;
+const updateCurrentUserAvatar = async (input) => {
+    const user = await user_model_1.User.findByIdAndUpdate(input.userId, {
+        avatarUrl: input.avatarUrl,
+        avatarPublicId: input.avatarPublicId
+    }, { new: true, runValidators: true }).exec();
+    if (!user) {
+        throw new api_error_1.ApiError(404, "User not found");
+    }
+    return (0, exports.toAuthUser)(user);
+};
+exports.updateCurrentUserAvatar = updateCurrentUserAvatar;

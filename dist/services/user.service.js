@@ -26,6 +26,7 @@ const toSafeUser = (user) => ({
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
+    avatarUrl: user.avatarUrl,
     role: user.role,
     isActive: user.isActive,
     invitedByUserId: user.invitedByUserId,

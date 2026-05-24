@@ -9,5 +9,6 @@ const auth_validators_1 = require("../validators/auth.validators");
 const router = (0, express_1.Router)();
 router.post("/login", auth_validators_1.loginValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(auth_controller_1.authController.loginController));
 router.get("/me", auth_middleware_1.requireAuth, (0, async_handler_1.asyncHandler)(auth_controller_1.authController.meController));
+router.patch("/me/avatar", auth_middleware_1.requireAuth, auth_validators_1.updateMeAvatarValidators, validate_request_middleware_1.validateRequest, (0, async_handler_1.asyncHandler)(auth_controller_1.authController.updateMeAvatarController));
 router.post("/logout", (0, async_handler_1.asyncHandler)(auth_controller_1.authController.logoutController));
 exports.default = router;

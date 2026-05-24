@@ -55,6 +55,20 @@ class BookingRequestController {
             }
         });
     };
+    updateBookingRequestController = async (req, res) => {
+        const { id } = req.params;
+        const bookingRequest = await (0, booking_request_service_1.updateBookingRequest)(id, req.body);
+        if (!bookingRequest) {
+            throw new api_error_1.ApiError(404, "Booking request not found");
+        }
+        res.status(200).json({
+            success: true,
+            message: "Demande mise à jour avec succès.",
+            data: {
+                bookingRequest
+            }
+        });
+    };
     updateBookingRequestStatusController = async (req, res) => {
         const { id } = req.params;
         const { status } = req.body;

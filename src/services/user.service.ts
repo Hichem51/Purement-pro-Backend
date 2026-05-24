@@ -52,6 +52,7 @@ export interface SafeUser {
   firstName: string;
   lastName: string;
   email: string;
+  avatarUrl?: string;
   role: UserRole;
   isActive: boolean;
   invitedByUserId?: Types.ObjectId;
@@ -100,6 +101,7 @@ export const toSafeUser = (user: IUser): SafeUser => ({
   firstName: user.firstName,
   lastName: user.lastName,
   email: user.email,
+  avatarUrl: user.avatarUrl,
   role: user.role,
   isActive: user.isActive,
   invitedByUserId: user.invitedByUserId,

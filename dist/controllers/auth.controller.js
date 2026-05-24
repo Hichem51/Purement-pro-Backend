@@ -23,6 +23,23 @@ class AuthController {
             }
         });
     };
+    updateMeAvatarController = async (req, res) => {
+        if (!req.user) {
+            throw new api_error_1.ApiError(401, "Authentication required");
+        }
+        const user = await (0, auth_service_1.updateCurrentUserAvatar)({
+            userId: req.user.id,
+            avatarUrl: req.body.avatarUrl,
+            avatarPublicId: req.body.avatarPublicId
+        });
+        res.status(200).json({
+            success: true,
+            message: "Photo de profil mise à jour avec succès.",
+            data: {
+                user
+            }
+        });
+    };
     logoutController = async (_req, res) => {
         res.status(200).json({
             success: true,
