@@ -4,8 +4,12 @@ import { getDashboardOverview, searchDashboard } from "../services/dashboard.ser
 import { ApiError } from "../utils/api-error";
 
 export class DashboardController {
-  getOverviewController = async (_req: Request, res: Response): Promise<void> => {
-    const overview = await getDashboardOverview();
+  getOverviewController = async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) {
+      throw new ApiError(401, "Authentication required");
+    }
+
+    const overview = await getDashboardOverview(req.user.role);
 
     res.status(200).json({
       success: true,
