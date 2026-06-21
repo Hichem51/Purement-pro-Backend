@@ -7,7 +7,6 @@ import {
   BookingRequestStatus,
   CleaningType,
   ContactPreference,
-  IBookingPhoto,
   IBookingPhone,
   IBookingRequest
 } from "../models/booking-request.model";
@@ -39,7 +38,7 @@ export interface CreateBookingRequestInput {
   referralSource?: string;
   marketingEmailConsent?: boolean;
   language?: BookingLanguage;
-  photos?: IBookingPhoto[];
+  photos?: string[];
   internalNotes?: string;
   source?: BookingRequestSource;
   createdByUserId?: string;
@@ -81,7 +80,7 @@ export interface UpdateBookingRequestInput {
 }
 
 export interface UpdateBookingRequestPhotosInput {
-  photos: IBookingPhoto[];
+  photos: string[];
 }
 
 export interface PaginatedBookingRequests {

@@ -484,40 +484,11 @@ export const createManualBookingRequestValidators = [
     .isArray({ max: 5 })
     .withMessage("Photos must be an array with at most 5 items"),
 
-  body("photos.*.url")
+  body("photos.*")
     .notEmpty()
     .withMessage("Photo URL is required")
     .isURL({ require_protocol: true })
-    .withMessage("Photo URL must be valid"),
-
-  body("photos.*.secureUrl")
-    .optional()
-    .isURL({ require_protocol: true })
-    .withMessage("Secure photo URL must be valid"),
-
-  body("photos.*.publicId")
-    .optional()
-    .trim()
-    .isLength({ max: 300 })
-    .withMessage("Photo public ID must be at most 300 characters"),
-
-  body("photos.*.originalName")
-    .optional()
-    .trim()
-    .isLength({ max: 200 })
-    .withMessage("Photo original name must be at most 200 characters"),
-
-  body("photos.*.mimeType")
-    .optional()
-    .trim()
-    .isLength({ max: 100 })
-    .withMessage("Photo MIME type must be at most 100 characters"),
-
-  body("photos.*.size")
-    .optional()
-    .isFloat({ min: 0, max: 5242880 })
-    .withMessage("Photo size must be between 0 and 5242880 bytes")
-    .toFloat()
+    .withMessage("Photo URL must be valid")
 ];
 
 export const getBookingRequestByIdValidators = [
@@ -738,38 +709,9 @@ export const updateBookingRequestPhotosValidators = [
     .isArray({ max: 5 })
     .withMessage("Photos must be an array with at most 5 items"),
 
-  body("photos.*.url")
+  body("photos.*")
     .notEmpty()
     .withMessage("Photo URL is required")
     .isURL({ require_protocol: true })
-    .withMessage("Photo URL must be valid"),
-
-  body("photos.*.secureUrl")
-    .optional()
-    .isURL({ require_protocol: true })
-    .withMessage("Secure photo URL must be valid"),
-
-  body("photos.*.publicId")
-    .optional()
-    .trim()
-    .isLength({ max: 300 })
-    .withMessage("Photo public ID must be at most 300 characters"),
-
-  body("photos.*.originalName")
-    .optional()
-    .trim()
-    .isLength({ max: 200 })
-    .withMessage("Photo original name must be at most 200 characters"),
-
-  body("photos.*.mimeType")
-    .optional()
-    .trim()
-    .isLength({ max: 100 })
-    .withMessage("Photo MIME type must be at most 100 characters"),
-
-  body("photos.*.size")
-    .optional()
-    .isFloat({ min: 0, max: 5242880 })
-    .withMessage("Photo size must be between 0 and 5242880 bytes")
-    .toFloat()
+    .withMessage("Photo URL must be valid")
 ];

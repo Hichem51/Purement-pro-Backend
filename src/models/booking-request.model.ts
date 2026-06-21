@@ -24,15 +24,6 @@ export const BOOKING_REQUEST_STATUSES = [
 
 export type BookingRequestStatus = (typeof BOOKING_REQUEST_STATUSES)[number];
 
-export interface IBookingPhoto {
-  url: string;
-  secureUrl?: string;
-  publicId?: string;
-  originalName?: string;
-  mimeType?: string;
-  size?: number;
-}
-
 export interface IBookingPhone {
   number: string;
   smsOptIn: boolean;
@@ -66,24 +57,12 @@ export interface IBookingRequest extends Document {
   referralSource?: string;
   marketingEmailConsent: boolean;
   language: BookingLanguage;
-  photos: IBookingPhoto[];
+  photos: string[];
   status: BookingRequestStatus;
   internalNotes?: string;
   createdAt: Date;
   updatedAt: Date;
 }
-
-const bookingPhotoSchema = new Schema<IBookingPhoto>(
-  {
-    url: { type: String, required: true, trim: true },
-    secureUrl: { type: String, trim: true },
-    publicId: { type: String, trim: true },
-    originalName: { type: String, trim: true },
-    mimeType: { type: String, trim: true },
-    size: { type: Number }
-  },
-  { _id: false }
-);
 
 const bookingPhoneSchema = new Schema<IBookingPhone>(
   {
@@ -132,7 +111,7 @@ const bookingRequestSchema = new Schema<IBookingRequest>(
     referralSource: { type: String, trim: true },
     marketingEmailConsent: { type: Boolean, default: false },
     language: { type: String, enum: ["fr", "en"], default: "fr" },
-    photos: { type: [bookingPhotoSchema], default: [] },
+    photos: { type: [String], default: [] },
     status: {
       type: String,
       enum: BOOKING_REQUEST_STATUSES,
