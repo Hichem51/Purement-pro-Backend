@@ -62,7 +62,6 @@ export interface IBookingRequest extends Document {
   frequency: string;
   contactPreference: ContactPreference;
   referralSource?: string;
-  bookingSmsConsent: boolean;
   marketingEmailConsent: boolean;
   language: BookingLanguage;
   photos: IBookingPhoto[];
@@ -123,7 +122,6 @@ const bookingRequestSchema = new Schema<IBookingRequest>(
     frequency: { type: String, required: true, trim: true },
     contactPreference: { type: String, enum: ["email", "sms", "phone", "whatsapp"], required: true },
     referralSource: { type: String, trim: true },
-    bookingSmsConsent: { type: Boolean, default: false },
     marketingEmailConsent: { type: Boolean, default: false },
     language: { type: String, enum: ["fr", "en"], default: "fr" },
     photos: { type: [bookingPhotoSchema], default: [] },

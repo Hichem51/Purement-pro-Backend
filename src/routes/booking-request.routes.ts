@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { bookingRequestController } from "../controllers/booking-request.controller";
 import { requireAuth, requireAuthOrInternalApiKey, requireRole } from "../middlewares/auth.middleware";
+import { verifyTurnstileToken } from "../middlewares/turnstile.middleware";
 import { validateRequest } from "../middlewares/validate-request.middleware";
 import { asyncHandler } from "../utils/async-handler";
 import {
@@ -22,6 +23,7 @@ const dashboardAccess = [requireAuth, requireRole("admin", "manager")];
 
 router.post(
   "/",
+  verifyTurnstileToken,
   normalizeBookingPhone,
   debugBookingValidation,
   createBookingRequestValidators,

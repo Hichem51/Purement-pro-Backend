@@ -11,6 +11,7 @@ interface EnvConfig {
   jwtExpiresIn: string;
   internalApiKey: string;
   brevoApiKey?: string;
+  turnstileSecretKey?: string;
   mailFromEmail?: string;
   mailFromName: string;
 }
@@ -25,7 +26,7 @@ const baseRequiredEnvVars = [
   "INTERNAL_API_KEY"
 ] as const;
 
-const productionRequiredEnvVars = ["BREVO_API_KEY"] as const;
+const productionRequiredEnvVars = ["BREVO_API_KEY", "TURNSTILE_SECRET_KEY"] as const;
 
 const requiredEnvVars =
   process.env.NODE_ENV === "production"
@@ -82,6 +83,7 @@ export const env: EnvConfig = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN as string,
   internalApiKey: process.env.INTERNAL_API_KEY as string,
   brevoApiKey: process.env.BREVO_API_KEY?.trim() || undefined,
+  turnstileSecretKey: process.env.TURNSTILE_SECRET_KEY?.trim() || undefined,
   mailFromEmail: process.env.MAIL_FROM_EMAIL?.trim() || undefined,
   mailFromName: process.env.MAIL_FROM_NAME?.trim() || "Purement Pro"
 };

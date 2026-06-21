@@ -9,6 +9,7 @@ const cleaningTypes = [
   "residential_cleaning",
   "office_cleaning"
 ];
+const cleaningTypeMessage = `Cleaning type must be one of: ${cleaningTypes.join(", ")}`;
 
 const contactPreferences = ["email", "sms", "phone", "whatsapp"];
 
@@ -36,6 +37,9 @@ const propertyDescriptionSafetyValidator = (value: string): boolean => {
 export const normalizeBookingPhone: RequestHandler = (req, _res, next) => {
   const phone = req.body.phone;
 
+  delete req.body.smsOptIn;
+  delete req.body.bookingSmsConsent;
+
   if (typeof phone === "string") {
     req.body.phone = {
       number: phone,
@@ -49,10 +53,6 @@ export const normalizeBookingPhone: RequestHandler = (req, _res, next) => {
   }
 
   if (req.body.phone && typeof req.body.phone === "object") {
-    if (req.body.bookingSmsConsent === undefined) {
-      req.body.bookingSmsConsent = req.body.phone.smsOptIn === true;
-    }
-
     console.log("Normalized phone object:", {
       number: req.body.phone.number ? "[provided]" : "",
       smsOptIn: req.body.phone.smsOptIn
@@ -196,7 +196,7 @@ export const createBookingRequestValidators = [
     .notEmpty()
     .withMessage("Cleaning type is required")
     .isIn(cleaningTypes)
-    .withMessage("Cleaning type is invalid"),
+    .withMessage(cleaningTypeMessage),
 
   body("roomsOffices")
     .notEmpty()
@@ -280,12 +280,6 @@ export const createBookingRequestValidators = [
     .trim()
     .isLength({ max: 200 })
     .withMessage("Referral source must be at most 200 characters"),
-
-  body("bookingSmsConsent")
-    .optional()
-    .isBoolean()
-    .withMessage("Booking SMS consent must be a boolean")
-    .toBoolean(),
 
   body("marketingEmailConsent")
     .optional()
@@ -383,7 +377,7 @@ export const createManualBookingRequestValidators = [
     .notEmpty()
     .withMessage("Cleaning type is required")
     .isIn(cleaningTypes)
-    .withMessage("Cleaning type is invalid"),
+    .withMessage(cleaningTypeMessage),
 
   body("roomsOffices")
     .notEmpty()
@@ -466,12 +460,6 @@ export const createManualBookingRequestValidators = [
     .trim()
     .isLength({ max: 200 })
     .withMessage("Referral source must be at most 200 characters"),
-
-  body("bookingSmsConsent")
-    .optional()
-    .isBoolean()
-    .withMessage("Booking SMS consent must be a boolean")
-    .toBoolean(),
 
   body("marketingEmailConsent")
     .optional()
@@ -623,7 +611,7 @@ export const updateBookingRequestValidator = [
   body("cleaningType")
     .optional()
     .isIn(cleaningTypes)
-    .withMessage("Cleaning type is invalid"),
+    .withMessage(cleaningTypeMessage),
 
   body("roomsOffices")
     .optional()
@@ -703,12 +691,6 @@ export const updateBookingRequestValidator = [
     .trim()
     .isLength({ max: 200 })
     .withMessage("Referral source must be at most 200 characters"),
-
-  body("bookingSmsConsent")
-    .optional()
-    .isBoolean()
-    .withMessage("Booking SMS consent must be a boolean")
-    .toBoolean(),
 
   body("marketingEmailConsent")
     .optional()

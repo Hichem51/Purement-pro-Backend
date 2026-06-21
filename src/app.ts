@@ -16,6 +16,8 @@ import userRoutes from "./routes/user.routes";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 const allowedOrigins = new Set([
   "http://localhost:3000",
   "https://www.purementpro.ca"

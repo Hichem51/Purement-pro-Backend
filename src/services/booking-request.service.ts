@@ -37,7 +37,6 @@ export interface CreateBookingRequestInput {
   frequency: string;
   contactPreference: ContactPreference;
   referralSource?: string;
-  bookingSmsConsent?: boolean;
   marketingEmailConsent?: boolean;
   language?: BookingLanguage;
   photos?: IBookingPhoto[];
@@ -77,7 +76,6 @@ export interface UpdateBookingRequestInput {
   frequency?: string;
   contactPreference?: ContactPreference;
   referralSource?: string;
-  bookingSmsConsent?: boolean;
   marketingEmailConsent?: boolean;
   language?: BookingLanguage;
 }
@@ -316,10 +314,6 @@ export const updateBookingRequest = async (
 
   if (input.referralSource !== undefined) {
     allowedUpdates.referralSource = input.referralSource;
-  }
-
-  if (input.bookingSmsConsent !== undefined) {
-    allowedUpdates.bookingSmsConsent = input.bookingSmsConsent;
   }
 
   if (input.marketingEmailConsent !== undefined) {
