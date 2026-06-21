@@ -16,7 +16,10 @@ import userRoutes from "./routes/user.routes";
 
 const app = express();
 
-const allowedOrigins = new Set(env.frontendUrls);
+const allowedOrigins = new Set([
+  "http://localhost:3000",
+  "https://www.purementpro.ca"
+]);
 const corsOptions: CorsOptions = {
   origin(origin, callback) {
     if (!origin || allowedOrigins.has(origin)) {
@@ -24,11 +27,11 @@ const corsOptions: CorsOptions = {
       return;
     }
 
-    callback(new Error("Not allowed by CORS"));
+    callback(null, false);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"],
-  credentials: false,
+  credentials: true,
   optionsSuccessStatus: 204
 };
 
@@ -45,6 +48,7 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/bookings", bookingRequestRoutes);
 app.use("/api/booking-requests", bookingRequestRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/invoices", invoiceRoutes);
