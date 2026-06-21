@@ -83,19 +83,23 @@ export const requireRole =
 export const requireAuthOrInternalApiKey =
   (...roles: UserRole[]) =>
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const internalApiKey = req.header("x-internal-api-key");
+    try {
+      const internalApiKey = req.header("x-internal-api-key");
 
-    if (isInternalApiKeyValid(internalApiKey)) {
-      next();
-      return;
-    }
-
-    await requireAuth(req, res, (authError?: unknown) => {
-      if (authError) {
-        next(authError);
+      if (isInternalApiKeyValid(internalApiKey)) {
+        next();
         return;
       }
 
-      requireRole(...roles)(req, res, next);
-    });
+      await requireAuth(req, res, (authError?: unknown) => {
+        if (authError) {
+          next(authError);
+          return;
+        }
+
+        requireRole(...roles)(req, res, next);
+      });
+    } catch (error) {
+      next(error);
+    }
   };

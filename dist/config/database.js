@@ -7,9 +7,15 @@ exports.connectDatabase = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const env_1 = require("./env");
 const connectDatabase = async () => {
-    await mongoose_1.default.connect(env_1.env.mongodbUri);
-    if (env_1.env.nodeEnv === "development") {
-        console.log(`MongoDB connected: ${mongoose_1.default.connection.name}`);
-    }
+    mongoose_1.default.connection.on("disconnected", () => {
+        console.error("MongoDB disconnected");
+    });
+    mongoose_1.default.connection.on("reconnected", () => {
+        console.log("MongoDB reconnected");
+    });
+    await mongoose_1.default.connect(env_1.env.mongodbUri, {
+        serverSelectionTimeoutMS: 10000
+    });
+    console.log("MongoDB connected");
 };
 exports.connectDatabase = connectDatabase;

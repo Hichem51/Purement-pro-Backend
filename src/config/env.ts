@@ -6,6 +6,7 @@ type NodeEnv = "development" | "production" | "test";
 
 interface EnvConfig {
   port: number;
+  host: string;
   nodeEnv: NodeEnv;
   frontendUrl: string;
   frontendUrls: string[];
@@ -18,7 +19,7 @@ interface EnvConfig {
   mailFromName: string;
 }
 
-const requiredEnvVars = [
+const baseRequiredEnvVars = [
   "PORT",
   "NODE_ENV",
   "FRONTEND_URL",
@@ -27,6 +28,13 @@ const requiredEnvVars = [
   "JWT_EXPIRES_IN",
   "INTERNAL_API_KEY"
 ] as const;
+
+const productionRequiredEnvVars = ["BREVO_API_KEY"] as const;
+
+const requiredEnvVars =
+  process.env.NODE_ENV === "production"
+    ? [...baseRequiredEnvVars, ...productionRequiredEnvVars]
+    : baseRequiredEnvVars;
 
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
 
@@ -52,15 +60,19 @@ const frontendUrls = (process.env.FRONTEND_URL as string)
   .map((url) => url.trim())
   .filter(Boolean);
 
+const localFrontendUrls = ["http://localhost:3000", "http://127.0.0.1:3000"];
+const allowedFrontendUrls = Array.from(new Set([...frontendUrls, ...localFrontendUrls]));
+
 if (frontendUrls.length === 0) {
   throw new Error("FRONTEND_URL must include at least one allowed origin");
 }
 
 export const env: EnvConfig = {
   port,
+  host: process.env.HOST?.trim() || "0.0.0.0",
   nodeEnv,
   frontendUrl: frontendUrls[0],
-  frontendUrls,
+  frontendUrls: allowedFrontendUrls,
   mongodbUri: process.env.MONGODB_URI as string,
   jwtSecret: process.env.JWT_SECRET as string,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN as string,

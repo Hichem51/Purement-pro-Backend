@@ -9,9 +9,17 @@ const env_1 = require("./config/env");
 const startServer = async () => {
     try {
         await (0, database_1.connectDatabase)();
-        app_1.default.listen(env_1.env.port, () => {
-            console.log(`Purement Pro API listening on port ${env_1.env.port}`);
+        const server = app_1.default.listen(env_1.env.port, env_1.env.host, () => {
+            console.log(`Purement Pro API listening on ${env_1.env.host}:${env_1.env.port}`);
         });
+        const shutdown = (signal) => {
+            console.log(`${signal} received. Shutting down Purement Pro API.`);
+            server.close(() => {
+                process.exit(0);
+            });
+        };
+        process.on("SIGTERM", shutdown);
+        process.on("SIGINT", shutdown);
     }
     catch (error) {
         console.error("Failed to start Purement Pro API");
@@ -19,4 +27,12 @@ const startServer = async () => {
         process.exit(1);
     }
 };
+process.on("unhandledRejection", (reason) => {
+    console.error("Unhandled promise rejection", reason);
+    process.exit(1);
+});
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught exception", error);
+    process.exit(1);
+});
 void startServer();

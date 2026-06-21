@@ -32,13 +32,12 @@ const corsOptions = {
     credentials: false,
     optionsSuccessStatus: 204
 };
-if (env_1.env.nodeEnv === "development") {
-    console.log(`Allowed CORS origins: ${env_1.env.frontendUrls.join(", ")}`);
-}
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)(corsOptions));
 app.options("*", (0, cors_1.default)(corsOptions));
-app.use((0, morgan_1.default)(env_1.env.nodeEnv === "production" ? "combined" : "dev"));
+if (env_1.env.nodeEnv === "development") {
+    app.use((0, morgan_1.default)("dev"));
+}
 app.use(express_1.default.json({ limit: "1mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "1mb" }));
 app.use("/api/health", health_routes_1.default);

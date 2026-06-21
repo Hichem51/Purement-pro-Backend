@@ -63,17 +63,22 @@ const requireRole = (...roles) => (req, _res, next) => {
 };
 exports.requireRole = requireRole;
 const requireAuthOrInternalApiKey = (...roles) => async (req, res, next) => {
-    const internalApiKey = req.header("x-internal-api-key");
-    if (isInternalApiKeyValid(internalApiKey)) {
-        next();
-        return;
-    }
-    await (0, exports.requireAuth)(req, res, (authError) => {
-        if (authError) {
-            next(authError);
+    try {
+        const internalApiKey = req.header("x-internal-api-key");
+        if (isInternalApiKeyValid(internalApiKey)) {
+            next();
             return;
         }
-        (0, exports.requireRole)(...roles)(req, res, next);
-    });
+        await (0, exports.requireAuth)(req, res, (authError) => {
+            if (authError) {
+                next(authError);
+                return;
+            }
+            (0, exports.requireRole)(...roles)(req, res, next);
+        });
+    }
+    catch (error) {
+        next(error);
+    }
 };
 exports.requireAuthOrInternalApiKey = requireAuthOrInternalApiKey;

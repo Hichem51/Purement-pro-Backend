@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.env = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const requiredEnvVars = [
+const baseRequiredEnvVars = [
     "PORT",
     "NODE_ENV",
     "FRONTEND_URL",
@@ -15,6 +15,10 @@ const requiredEnvVars = [
     "JWT_EXPIRES_IN",
     "INTERNAL_API_KEY"
 ];
+const productionRequiredEnvVars = ["BREVO_API_KEY"];
+const requiredEnvVars = process.env.NODE_ENV === "production"
+    ? [...baseRequiredEnvVars, ...productionRequiredEnvVars]
+    : baseRequiredEnvVars;
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
 if (missingEnvVars.length > 0) {
     throw new Error(`Missing required environment variables: ${missingEnvVars.join(", ")}`);
@@ -32,14 +36,17 @@ const frontendUrls = process.env.FRONTEND_URL
     .split(",")
     .map((url) => url.trim())
     .filter(Boolean);
+const localFrontendUrls = ["http://localhost:3000", "http://127.0.0.1:3000"];
+const allowedFrontendUrls = Array.from(new Set([...frontendUrls, ...localFrontendUrls]));
 if (frontendUrls.length === 0) {
     throw new Error("FRONTEND_URL must include at least one allowed origin");
 }
 exports.env = {
     port,
+    host: process.env.HOST?.trim() || "0.0.0.0",
     nodeEnv,
     frontendUrl: frontendUrls[0],
-    frontendUrls,
+    frontendUrls: allowedFrontendUrls,
     mongodbUri: process.env.MONGODB_URI,
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN,
