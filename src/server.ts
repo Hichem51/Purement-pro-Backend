@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import app from "./app";
 import { connectDatabase } from "./config/database";
 import { env } from "./config/env";
@@ -8,6 +10,7 @@ const startServer = async (): Promise<void> => {
 
     const server = app.listen(env.port, env.host, () => {
       console.log(`Purement Pro API listening on ${env.host}:${env.port}`);
+      console.log("Server fully running and stable");
     });
 
     const shutdown = (signal: NodeJS.Signals): void => {

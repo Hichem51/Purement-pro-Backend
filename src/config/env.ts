@@ -1,7 +1,3 @@
-import dotenv from "dotenv";
-
-dotenv.config();
-
 type NodeEnv = "development" | "production" | "test";
 
 interface EnvConfig {
@@ -67,13 +63,21 @@ if (frontendUrls.length === 0) {
   throw new Error("FRONTEND_URL must include at least one allowed origin");
 }
 
+const mongodbUri = (process.env.MONGODB_URI as string).trim();
+
+if (!mongodbUri.startsWith("mongodb+srv://") && !mongodbUri.startsWith("mongodb://")) {
+  throw new Error(
+    "MONGODB_URI must start with mongodb+srv:// or mongodb://"
+  );
+}
+
 export const env: EnvConfig = {
   port,
   host: process.env.HOST?.trim() || "0.0.0.0",
   nodeEnv,
   frontendUrl: frontendUrls[0],
   frontendUrls: allowedFrontendUrls,
-  mongodbUri: process.env.MONGODB_URI as string,
+  mongodbUri,
   jwtSecret: process.env.JWT_SECRET as string,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN as string,
   internalApiKey: process.env.INTERNAL_API_KEY as string,
