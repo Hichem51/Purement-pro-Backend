@@ -5,11 +5,9 @@ import { isValidObjectId } from "mongoose";
 import { BOOKING_REQUEST_STATUSES } from "../models/booking-request.model";
 
 const cleaningTypes = [
-  "regular_residential",
-  "commercial",
-  "airbnb_rental",
-  "deep_cleaning",
-  "decluttering"
+  "airbnb_cleaning",
+  "residential_cleaning",
+  "office_cleaning"
 ];
 
 const contactPreferences = ["email", "sms", "phone", "whatsapp"];

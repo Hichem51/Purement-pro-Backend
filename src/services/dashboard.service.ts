@@ -110,11 +110,9 @@ interface RecentInvoiceResult {
 }
 
 const CLEANING_TYPES: readonly CleaningType[] = [
-  "regular_residential",
-  "commercial",
-  "airbnb_rental",
-  "deep_cleaning",
-  "decluttering"
+  "airbnb_cleaning",
+  "residential_cleaning",
+  "office_cleaning"
 ];
 
 const createCountBucket = <T extends string>(keys: readonly T[]): CountBucket<T> => {

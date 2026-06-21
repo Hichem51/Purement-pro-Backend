@@ -1,11 +1,9 @@
 import { Document, Model, Schema, Types, model } from "mongoose";
 
 export type CleaningType =
-  | "regular_residential"
-  | "commercial"
-  | "airbnb_rental"
-  | "deep_cleaning"
-  | "decluttering";
+  | "airbnb_cleaning"
+  | "residential_cleaning"
+  | "office_cleaning";
 
 export type ContactPreference = "email" | "sms" | "phone" | "whatsapp";
 
@@ -111,7 +109,7 @@ const bookingRequestSchema = new Schema<IBookingRequest>(
     propertyType: { type: String, required: true, trim: true },
     cleaningType: {
       type: String,
-      enum: ["regular_residential", "commercial", "airbnb_rental", "deep_cleaning", "decluttering"],
+      enum: ["airbnb_cleaning", "residential_cleaning", "office_cleaning"],
       required: true
     },
     roomsOffices: { type: Number, required: true },
