@@ -20,6 +20,7 @@ app.set("trust proxy", 1);
 
 const allowedOrigins = new Set([
   "http://localhost:3000",
+  "https://purementpro.ca",
   "https://www.purementpro.ca"
 ]);
 const corsOptions: CorsOptions = {
