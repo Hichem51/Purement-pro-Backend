@@ -43,8 +43,9 @@ export const validateRequest: RequestHandler = (req, res, next) => {
     message: "Validation failed",
     missingFields,
     errors: errors.map((error) => ({
-      type: error.type,
+      field: "path" in error ? error.path : undefined,
       message: error.msg,
+      type: error.type,
       path: "path" in error ? error.path : undefined,
       location: "location" in error ? error.location : undefined
     }))
