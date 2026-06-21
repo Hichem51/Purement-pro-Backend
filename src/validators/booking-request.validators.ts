@@ -64,6 +64,23 @@ export const normalizeBookingPhone: RequestHandler = (req, _res, next) => {
   next();
 };
 
+export const debugBookingValidation: RequestHandler = (req, _res, next) => {
+  const body = req.body;
+
+  console.log("HEADERS:", req.headers);
+  console.log("BODY:", body);
+  console.log("PHONE:", body.phone);
+  console.log("VALIDATION CHECKS:", {
+    name: Boolean(body.firstName && body.lastName),
+    email: Boolean(body.email),
+    phone: Boolean(body.phone?.number),
+    service: Boolean(body.cleaningType),
+    date: Boolean(body.preferredStartDate)
+  });
+
+  next();
+};
+
 export const listBookingRequestsValidators = [
   query("page")
     .default(1)

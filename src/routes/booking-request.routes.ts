@@ -7,6 +7,7 @@ import { asyncHandler } from "../utils/async-handler";
 import {
   createBookingRequestValidators,
   createManualBookingRequestValidators,
+  debugBookingValidation,
   getBookingRequestByIdValidators,
   listBookingRequestsValidators,
   normalizeBookingPhone,
@@ -22,6 +23,7 @@ const dashboardAccess = [requireAuth, requireRole("admin", "manager")];
 router.post(
   "/",
   normalizeBookingPhone,
+  debugBookingValidation,
   createBookingRequestValidators,
   validateRequest,
   asyncHandler(bookingRequestController.createBookingRequestController)
@@ -31,6 +33,7 @@ router.post(
   "/manual",
   ...dashboardAccess,
   normalizeBookingPhone,
+  debugBookingValidation,
   createManualBookingRequestValidators,
   validateRequest,
   asyncHandler(bookingRequestController.createManualBookingRequestController)
