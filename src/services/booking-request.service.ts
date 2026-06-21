@@ -8,6 +8,7 @@ import {
   CleaningType,
   ContactPreference,
   IBookingPhoto,
+  IBookingPhone,
   IBookingRequest
 } from "../models/booking-request.model";
 import { createNotificationSafely } from "./notification.service";
@@ -17,7 +18,7 @@ export interface CreateBookingRequestInput {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone: IBookingPhone;
   streetAddress: string;
   city: string;
   provinceState: string;
@@ -57,7 +58,7 @@ export interface UpdateBookingRequestInput {
   firstName?: string;
   lastName?: string;
   email?: string;
-  phone?: string;
+  phone?: IBookingPhone;
   streetAddress?: string;
   city?: string;
   provinceState?: string;
@@ -195,6 +196,7 @@ export const listBookingRequests = async (
       { lastName: searchRegex },
       { email: searchRegex },
       { phone: searchRegex },
+      { "phone.number": searchRegex },
       { city: searchRegex }
     ];
   }

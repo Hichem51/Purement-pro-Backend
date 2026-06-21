@@ -1,3 +1,4 @@
+import { RequestHandler } from "express";
 import { body, param, query } from "express-validator";
 import { isValidObjectId } from "mongoose";
 
@@ -32,6 +33,35 @@ const propertyDescriptionSafetyValidator = (value: string): boolean => {
   }
 
   return true;
+};
+
+export const normalizeBookingPhone: RequestHandler = (req, _res, next) => {
+  const phone = req.body.phone;
+
+  if (typeof phone === "string") {
+    req.body.phone = {
+      number: phone,
+      smsOptIn: false
+    };
+  } else if (phone && typeof phone === "object" && !Array.isArray(phone)) {
+    req.body.phone = {
+      number: typeof phone.number === "string" ? phone.number : "",
+      smsOptIn: phone.smsOptIn === undefined ? false : phone.smsOptIn
+    };
+  }
+
+  if (req.body.phone && typeof req.body.phone === "object") {
+    if (req.body.bookingSmsConsent === undefined) {
+      req.body.bookingSmsConsent = req.body.phone.smsOptIn === true;
+    }
+
+    console.log("Normalized phone object:", {
+      number: req.body.phone.number ? "[provided]" : "",
+      smsOptIn: req.body.phone.smsOptIn
+    });
+  }
+
+  next();
 };
 
 export const listBookingRequestsValidators = [
@@ -90,11 +120,21 @@ export const createBookingRequestValidators = [
     .withMessage("Email must be at most 254 characters"),
 
   body("phone")
+    .isObject()
+    .withMessage("Phone must be an object"),
+
+  body("phone.number")
     .trim()
     .notEmpty()
     .withMessage("Phone is required")
     .isLength({ max: 30 })
     .withMessage("Phone must be at most 30 characters"),
+
+  body("phone.smsOptIn")
+    .optional()
+    .isBoolean()
+    .withMessage("SMS opt-in must be a boolean")
+    .toBoolean(),
 
   body("streetAddress")
     .trim()
@@ -267,11 +307,21 @@ export const createManualBookingRequestValidators = [
     .withMessage("Email must be at most 254 characters"),
 
   body("phone")
+    .isObject()
+    .withMessage("Phone must be an object"),
+
+  body("phone.number")
     .trim()
     .notEmpty()
     .withMessage("Phone is required")
     .isLength({ max: 30 })
     .withMessage("Phone must be at most 30 characters"),
+
+  body("phone.smsOptIn")
+    .optional()
+    .isBoolean()
+    .withMessage("SMS opt-in must be a boolean")
+    .toBoolean(),
 
   body("streetAddress")
     .trim()
@@ -504,9 +554,20 @@ export const updateBookingRequestValidator = [
 
   body("phone")
     .optional()
+    .isObject()
+    .withMessage("Phone must be an object"),
+
+  body("phone.number")
+    .optional()
     .trim()
     .isLength({ max: 30 })
     .withMessage("Phone must be at most 30 characters"),
+
+  body("phone.smsOptIn")
+    .optional()
+    .isBoolean()
+    .withMessage("SMS opt-in must be a boolean")
+    .toBoolean(),
 
   body("streetAddress")
     .optional()

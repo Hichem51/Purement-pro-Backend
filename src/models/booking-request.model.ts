@@ -33,6 +33,11 @@ export interface IBookingPhoto {
   size?: number;
 }
 
+export interface IBookingPhone {
+  number: string;
+  smsOptIn: boolean;
+}
+
 export interface IBookingRequest extends Document {
   customerId?: Types.ObjectId;
   requestNumber?: string;
@@ -40,7 +45,7 @@ export interface IBookingRequest extends Document {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone: IBookingPhone;
   streetAddress: string;
   city: string;
   provinceState: string;
@@ -81,6 +86,14 @@ const bookingPhotoSchema = new Schema<IBookingPhoto>(
   { _id: false }
 );
 
+const bookingPhoneSchema = new Schema<IBookingPhone>(
+  {
+    number: { type: String, required: true, trim: true },
+    smsOptIn: { type: Boolean, default: false }
+  },
+  { _id: false }
+);
+
 const bookingRequestSchema = new Schema<IBookingRequest>(
   {
     customerId: { type: Schema.Types.ObjectId, ref: "Customer" },
@@ -89,7 +102,7 @@ const bookingRequestSchema = new Schema<IBookingRequest>(
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
-    phone: { type: String, required: true, trim: true },
+    phone: { type: bookingPhoneSchema, required: true },
     streetAddress: { type: String, required: true, trim: true },
     city: { type: String, required: true, trim: true },
     provinceState: { type: String, required: true, trim: true },
@@ -127,7 +140,7 @@ const bookingRequestSchema = new Schema<IBookingRequest>(
 );
 
 bookingRequestSchema.index({ email: 1 });
-bookingRequestSchema.index({ phone: 1 });
+bookingRequestSchema.index({ "phone.number": 1 });
 bookingRequestSchema.index({ status: 1 });
 bookingRequestSchema.index({ preferredStartDate: 1 });
 bookingRequestSchema.index({ createdAt: 1 });

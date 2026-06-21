@@ -4,7 +4,8 @@ import {
   BOOKING_REQUEST_STATUSES,
   BookingRequest,
   BookingRequestStatus,
-  CleaningType
+  CleaningType,
+  IBookingPhone
 } from "../models/booking-request.model";
 import {
   INVOICE_PAYMENT_STATUSES,
@@ -88,7 +89,7 @@ interface RecentBookingResult {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string;
+  phone: IBookingPhone;
   cleaningType: CleaningType;
   status: BookingRequestStatus;
   preferredStartDate: Date;
@@ -538,7 +539,9 @@ export const searchDashboard = async (
   };
 
   const [bookings, invoices, users] = await Promise.all([
-    BookingRequest.find(searchFilter(["requestNumber", "firstName", "lastName", "email", "phone", "city"]))
+    BookingRequest.find(
+      searchFilter(["requestNumber", "firstName", "lastName", "email", "phone", "phone.number", "city"])
+    )
       .sort({ createdAt: -1 })
       .limit(5)
       .select("requestNumber firstName lastName email status createdAt")

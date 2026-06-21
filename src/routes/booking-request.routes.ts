@@ -9,6 +9,7 @@ import {
   createManualBookingRequestValidators,
   getBookingRequestByIdValidators,
   listBookingRequestsValidators,
+  normalizeBookingPhone,
   updateBookingRequestValidator,
   updateBookingRequestNotesValidators,
   updateBookingRequestPhotosValidators,
@@ -20,6 +21,7 @@ const dashboardAccess = [requireAuth, requireRole("admin", "manager")];
 
 router.post(
   "/",
+  normalizeBookingPhone,
   createBookingRequestValidators,
   validateRequest,
   asyncHandler(bookingRequestController.createBookingRequestController)
@@ -28,6 +30,7 @@ router.post(
 router.post(
   "/manual",
   ...dashboardAccess,
+  normalizeBookingPhone,
   createManualBookingRequestValidators,
   validateRequest,
   asyncHandler(bookingRequestController.createManualBookingRequestController)
@@ -52,6 +55,7 @@ router.get(
 router.patch(
   "/:id",
   ...dashboardAccess,
+  normalizeBookingPhone,
   updateBookingRequestValidator,
   validateRequest,
   asyncHandler(bookingRequestController.updateBookingRequestController)
