@@ -5,9 +5,11 @@ import { isValidObjectId } from "mongoose";
 import { BOOKING_REQUEST_STATUSES } from "../models/booking-request.model";
 
 const cleaningTypes = [
-  "airbnb_cleaning",
-  "residential_cleaning",
-  "office_cleaning"
+  "regular_residential_cleaning",
+  "commercial_cleaning",
+  "airbnb_rental_cleaning",
+  "deep_cleaning",
+  "decluttering_cleaning"
 ];
 const cleaningTypeMessage = `Cleaning type must be one of: ${cleaningTypes.join(", ")}`;
 
